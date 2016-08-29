@@ -20,7 +20,7 @@ from .utils import merge, not_none, not_none_sorted
 
 ### new imports
 ### TODO: move this method to the wsgiservice module
-def get_wsgiservice_methods(resource):
+def get_wsgiservice_http_methods(resource):
     return [method for method in resource.KNOWN_METHODS if hasattr(resource, method)]
 
 
@@ -196,8 +196,8 @@ class Swagger(object):
             'info': infos,
             'produces': list(iterkeys(self.api.representations)),
             'consumes': ['application/json'],
-            # 'securityDefinitions': self.api.authorizations or None,
-            # 'security': self.security_requirements(self.api.security) or None,
+            'securityDefinitions': self.api.authorizations or None,
+            'security': self.security_requirements(self.api.security) or None,
             'tags': tags,
             'definitions': self.serialize_definitions() or None,
             'responses': responses or None,
@@ -248,7 +248,7 @@ class Swagger(object):
         params = merge(params, extract_path_params(url))
         doc['params'] = params
         # for method in [m.lower() for m in resource.methods or []]:
-        for method in [m.lower() for m in get_wsgiservice_methods(resource)]:
+        for method in [m.lower() for m in get_wsgiservice_http_methods(resource)]:
             method_doc = doc.get(method, OrderedDict())
             # method_impl = getattr(resource, method)
             method_impl = getattr(resource, method.upper())
@@ -310,21 +310,21 @@ class Swagger(object):
     ### TODO: Need to consistently with wsgiservice specify error handling through the api interface
     def register_errors(self):
         responses = {}
-    #     for exception, handler in self.api.error_handlers.items():
-    #         doc = parse_docstring(handler)
-    #         response = {
-    #             'description': doc['summary']
-    #         }
-    #         apidoc = getattr(handler, '__apidoc__', {})
-    #         if 'params' in apidoc:
-    #             response['headers'] = dict(
-    #                 (n, _param_to_header(o))
-    #                 for n, o in apidoc['params'].items() if o.get('in') == 'header'
-    #             )
-    #         if 'responses' in apidoc:
-    #             _, model = list(apidoc['responses'].values())[0]
-    #             response['schema'] = self.serialize_schema(model)
-    #         responses[exception.__name__] = not_none(response)
+        for exception, handler in self.api.error_handlers.items():
+            doc = parse_docstring(handler)
+            response = {
+                'description': doc['summary']
+            }
+            apidoc = getattr(handler, '__apidoc__', {})
+            if 'params' in apidoc:
+                response['headers'] = dict(
+                    (n, _param_to_header(o))
+                    for n, o in apidoc['params'].items() if o.get('in') == 'header'
+                )
+            if 'responses' in apidoc:
+                _, model = list(apidoc['responses'].values())[0]
+                response['schema'] = self.serialize_schema(model)
+            responses[exception.__name__] = not_none(response)
         return responses
 
     ### Extracts the resource specification from annotations
@@ -338,7 +338,7 @@ class Swagger(object):
             'parameters': self.parameters_for(doc) or None
         }
         # for method in [m.lower() for m in resource.methods or []]:
-        for method in [m.lower() for m in get_wsgiservice_methods(resource)]:
+        for method in [m.lower() for m in get_wsgiservice_http_methods(resource)]:
             methods = [m.lower() for m in kwargs.get('methods', [])]
             if doc[method] is False or methods and method not in methods:
                 continue
@@ -433,7 +433,6 @@ class Swagger(object):
                         responses[code].update(description=description)
                     else:
                         responses[code] = {'description': description}
-                    ### TODO: uncomment the following section
                     if model:
                         responses[code]['schema'] = self.serialize_schema(model)
             if 'model' in d:
@@ -514,39 +513,38 @@ class Swagger(object):
         elif isinstance(field, fields.List):
             self.register_field(field.container)
 
-    # ### security-related documentation ###
-    # ### TODO
+    ### security-related documentation ###
     def security_for(self, doc, method):
         security = None
-        # if 'security' in doc:
-        #     auth = doc['security']
-        #     security = self.security_requirements(auth)
-        #
-        # if 'security' in doc[method]:
-        #     auth = doc[method]['security']
-        #     security = self.security_requirements(auth)
-        #
+        if 'security' in doc:
+            auth = doc['security']
+            security = self.security_requirements(auth)
+
+        if 'security' in doc[method]:
+            auth = doc[method]['security']
+            security = self.security_requirements(auth)
+
         return security
-    #
-    # def security_requirements(self, value):
-    #     if isinstance(value, (list, tuple)):
-    #         return [self.security_requirement(v) for v in value]
-    #     elif value:
-    #         requirement = self.security_requirement(value)
-    #         return [requirement] if requirement else None
-    #     else:
-    #         return []
-    #
-    # def security_requirement(self, value):
-    #     if isinstance(value, (string_types)):
-    #         return {value: []}
-    #     elif isinstance(value, dict):
-    #         return dict(
-    #             (k, v if isinstance(v, (list, tuple)) else [v])
-    #             for k, v in iteritems(value)
-    #         )
-    #     else:
-    #         return None
+
+    def security_requirements(self, value):
+        if isinstance(value, (list, tuple)):
+            return [self.security_requirement(v) for v in value]
+        elif value:
+            requirement = self.security_requirement(value)
+            return [requirement] if requirement else None
+        else:
+            return []
+
+    def security_requirement(self, value):
+        if isinstance(value, (string_types)):
+            return {value: []}
+        elif isinstance(value, dict):
+            return dict(
+                (k, v if isinstance(v, (list, tuple)) else [v])
+                for k, v in iteritems(value)
+            )
+        else:
+            return None
 
 
 

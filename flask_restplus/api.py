@@ -29,7 +29,7 @@ from .mask import ParseError, MaskError
 from .namespace import Namespace
 #from .postman import PostmanCollectionV1
 from .resource import Resource
-from .swagger import Swagger
+from .swagger import Swagger, get_wsgiservice_http_methods
 from .utils import default_id, camel_to_dash, unpack
 from .representations import output_json
 
@@ -45,6 +45,7 @@ DEFAULT_REPRESENTATIONS = [('application/json', output_json)]
 ### wsgiservice-specific imoprts
 import wsgiservice
 
+from errors import SecurityError
 
 
 
@@ -108,8 +109,8 @@ class Api(object):
         self.contact_url = contact_url
         self.license = license
         self.license_url = license_url
-        # self.authorizations = authorizations
-        # self.security = security
+        self.authorizations = authorizations
+        self.security = security
         self.default_id = default_id
         self._validate = validate
         self._doc = doc
@@ -444,6 +445,10 @@ class Api(object):
     ### Can keep Api-Namespace mutual references and (possibly) resource as well as model copying,
     ### but remove error handler code
     def add_namespace(self, ns):
+        # Check whether namespace security requirements are contained in API security definitions
+        if not self._security_requirements_in_authorizations(ns):
+            raise SecurityError('Namespace security use inconsistent with Api security definitions in authorizations')
+
         if ns not in self.namespaces:
             self.namespaces.append(ns)
             if self not in ns.apis:
@@ -458,6 +463,16 @@ class Api(object):
         # # Register error handlers
         # for exception, handler in ns.error_handlers.items():
         #     self.error_handlers[exception] = handler
+
+    def _security_requirements_in_authorizations(self,ns):
+        for resource, _ , _ in ns.resources:
+            for method in get_wsgiservice_http_methods(resource):
+                method = getattr(resource, method)
+                if hasattr(method,'__apidoc__'):
+                    for security_requirement in method.__apidoc__.get('security',[]):
+                        if security_requirement not in self.authorizations:
+                            return False
+        return True
 
     ### Create a namespace and add it to internally maintained sequence ###
     def namespace(self, *args, **kwargs):

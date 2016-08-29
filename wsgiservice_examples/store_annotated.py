@@ -18,7 +18,7 @@ data = {}
 
 # Namespace instantiation (sets path prefix and documentation tag/description for all owned (mounted) resources)
 ns = namespace.Namespace(
-    name='store_interface_ns', description='An associative (key,document) store',
+    name='store_interface', description='An associative (key,document) store',
     path='/', decorators=None, validate=None)
 
 
@@ -59,7 +59,8 @@ class Document(Resource):
     NOT_FOUND = (KeyError,)
 
     # parameter model
-    # @expect(id) # TODO: models
+    # @expect(id)
+    # @ns.security('basic_auth','api_key')
     @ns.response(code=200,description='Returned requested document',model=None)
     def GET(self, id):
         "Return the document indicated by the ID."
@@ -98,13 +99,34 @@ class Documents(Resource):
         raise_201(self, id)
 
 
+
+# # API security definitions
+# # dictionary of name -  Swagger Security Scheme object
+# security_defintions = { 'basic_auth' : { 'type' : 'basic'},
+#                         'api_key'    : { 'type' : 'apiKey',
+#                                          'name' : 'api_key',
+#                                          'in'   : 'header',
+#                                          }, }
+
+
+
+# # API wide applied security settings (list of security schemes to authorize with the API
+# # (logical OR between list elements))
+# # Assembled to a Swagger Security Requirement object by documentation generator
+# api_wide_security = ( 'basic_auth',
+#                       'api_key'    )
+
+
+
+
 # Note only that for Beekeeper's application the URL prefix for mounting the wsgiservice.Application instance to the
 # URLMap must be retrieved from the Api instance with Api.base_path() in order to enforce consistency between application
 # and documentation
-api = api.Api(app=None, version='1.0', title=None, description=None,
+api = api.Api( #app=None,
+            version='1.0', title=None, description=None,
             terms_url=None, license=None, license_url=None,
-            contact=None, contact_url=None, contact_email=None,
-            authorizations=None, security=None, doc='/', # default_id=default_id, # this is flask-restplus.utils.default_id
+            contact=None, contact_url=None, contact_email=None, # authorizations=security_defintions, security=api_wide_security,
+            doc='/', # default_id=default_id, # this is flask-restplus.utils.default_id
             default='default', default_label='Default namespace', validate=None,
             tags=None, prefix='/',                       # NOTE the special prefix as the base_path
             default_mediatype='application/json', decorators=None,

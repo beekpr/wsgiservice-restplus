@@ -325,6 +325,19 @@ class Namespace(object):
         return self.doc(deprecated=True)(func)
 
 
+    ### TODO: Enforce use of only valid security specifiers
+    def security(self,*args):
+        '''Operation security decorator
+
+        Positional arguments specify alternative security requirements to use the operation.'''
+
+        def wrapper(documented):
+            return self.doc(security=args)(documented)
+        return wrapper
+
+
+
+
 def unshortcut_params_description(data):
     if 'params' in data:
         for name, description in six.iteritems(data['params']):
