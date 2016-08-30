@@ -37,6 +37,7 @@ id_saved_model = ns.clone('id_saved_model', id_model,{'saved': fields.Boolean(de
 # # TODO: Error annotations (e.g. marshal_with, others)
 
 
+
 # PUT request handler
 def put_document(id,doc_resource_request_post):
     """Overwrite or create the document indicated by the ID. Parameters
@@ -71,6 +72,7 @@ class Document(Resource):
     # TODO: extract into separate function in order not to perform request validation twice
     @ns.param(name='doc', description='Document replacing old document.', _in='formData')
     @ns.marshal_with(id_saved_model,code=200, description='Document updated')
+    @ns.security('basic_auth')
     def PUT(self, id):
         """Overwrite or create the document indicated by the ID. Parameters
         are passed as key/value pairs in the POST data."""
@@ -100,21 +102,24 @@ class Documents(Resource):
 
 
 
-# # API security definitions
-# # dictionary of name -  Swagger Security Scheme object
-# security_defintions = { 'basic_auth' : { 'type' : 'basic'},
-#                         'api_key'    : { 'type' : 'apiKey',
-#                                          'name' : 'api_key',
-#                                          'in'   : 'header',
-#                                          }, }
+# API security definitions
+# dictionary of name -  Swagger Security Scheme object
+security_defintions = { 'basic_auth'   : { 'type' : 'basic'} } #,
+                        # 'api_token'    : { 'type'        : 'apiKey',
+                        #                    'name'        : 'Authorization',
+                        #                    'in'          : 'header',
+                        #                    'description' : 'API token authenatication: ' \
+                        #                                    'Enter the token you received from http://... ' \
+                        #                                    'in this format: \"Token xwdt...\"'
+                        #                  }, }
 
 
 
-# # API wide applied security settings (list of security schemes to authorize with the API
-# # (logical OR between list elements))
-# # Assembled to a Swagger Security Requirement object by documentation generator
-# api_wide_security = ( 'basic_auth',
-#                       'api_key'    )
+# API wide applied security settings (list of security schemes to authorize with the API
+# (logical OR between list elements))
+# Assembled to a Swagger Security Requirement object by documentation generator
+api_wide_security = ( 'basic_auth' )#,
+#                      'api_token'    )
 
 
 
@@ -125,10 +130,11 @@ class Documents(Resource):
 api = api.Api( #app=None,
             version='1.0', title=None, description=None,
             terms_url=None, license=None, license_url=None,
-            contact=None, contact_url=None, contact_email=None, # authorizations=security_defintions, security=api_wide_security,
+            contact=None, contact_url=None, contact_email=None,
+            authorizations=security_defintions, security=api_wide_security,
             doc='/', # default_id=default_id, # this is flask-restplus.utils.default_id
             default='default', default_label='Default namespace', validate=None,
-            tags=None, prefix='/',                       # NOTE the special prefix as the base_path
+            tags=None, prefix='/',    # NOTE the special prefix as the base_path
             default_mediatype='application/json', decorators=None,
             catch_all_404s=False, serve_challenge_on_401=False, format_checker=None)
 
