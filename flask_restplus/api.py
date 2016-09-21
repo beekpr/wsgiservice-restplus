@@ -513,6 +513,7 @@ def generate_swagger_resource(api, swagger_path):
         _path = swagger_path
 
         def GET(self):
+            self.type = 'application/json'
             return api.__schema__()
 
     return SwaggerResource
