@@ -18,7 +18,6 @@ from .utils import merge, not_none, not_none_sorted
 from .wsgiservice_adaptors import get_resource_http_methods
 
 
-#: Maps Flask/Werkzeug rooting types to Swagger ones
 PATH_TYPES = {
     'int': 'integer',
     'float': 'number',
@@ -26,8 +25,6 @@ PATH_TYPES = {
     None: 'string',
 }
 
-
-#: Maps Python primitives types to Swagger ones
 PY_TYPES = {
     int: 'integer',
     str: 'string',
@@ -472,7 +469,6 @@ class Swagger(object):
 
         raise ValueError('Model {0} not registered'.format(model))
 
-    ### model registering ###
     ### transitively adds all parents and component fields to registered model and returns
     ### a JSON-schema reference
     def register_model(self, model):

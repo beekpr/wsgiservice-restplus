@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-# import flask
-
-# TODO: FUL-3376
-# from werkzeug.exceptions import HTTPException
-
 __all__ = (
     # 'abort',
     'RestError',
@@ -13,29 +8,6 @@ __all__ = (
     'SpecsError',
     'SecurityError',
 )
-
-# TODO: FUL-3376
-# def abort(code=500, message=None, **kwargs):
-#     '''
-#     Properly abort the current request.
-#
-#     Raise a `HTTPException` for the given status `code`.
-#     Attach any keyword arguments to the exception for later processing.
-#
-#     :param int code: The associated HTTP status code
-#     :param str message: An optional details message
-#     :param kwargs: Any additional data to pass to the error payload
-#     :raise HTTPException:
-#     '''
-#     try:
-#         flask.abort(code)
-#     except HTTPException as e:
-#         if message:
-#             kwargs['message'] = str(message)
-#         if kwargs:
-#             e.data = kwargs
-#         raise
-
 
 class RestError(Exception):
     '''Base class for all wsgiservice-Restplus Errors'''

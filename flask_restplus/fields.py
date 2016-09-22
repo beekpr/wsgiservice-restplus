@@ -6,16 +6,11 @@ from datetime import date, datetime
 from decimal import Decimal, ROUND_HALF_EVEN
 from email.utils import formatdate
 
-from six import iteritems, itervalues, text_type, string_types
+from six import itervalues, text_type, string_types
 
-# from flask import url_for, request
-# from werkzeug import cached_property
-
-from ._compat import urlparse, urlunparse
 from .inputs import date_from_iso8601, datetime_from_iso8601, datetime_from_rfc822
 from .errors import RestError
-# from .marshalling import marshal
-from .utils import camel_to_dash, not_none
+from .utils import not_none
 
 
 __all__ = ('Raw', 'String', 'FormattedString', #'Url',

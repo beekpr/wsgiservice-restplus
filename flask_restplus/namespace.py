@@ -23,6 +23,7 @@ from wsgiservice_adaptors import get_resource_http_methods
 # TODO: FUL-3505 Possibly specify specialized error handling on the namespace level
 # TODO: FUL-3376
 class Namespace(object):
+
     '''
     Group resources together.
 

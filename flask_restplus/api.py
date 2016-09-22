@@ -1,33 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import difflib
-import inspect
-import operator
-import re
-import sys
-
-from functools import wraps, partial
-from types import MethodType
-
-# from flask import url_for, request, current_app
-# from flask import make_response as original_flask_make_response
-# from flask.helpers import _endpoint_from_view_func
-# from flask.signals import got_request_exception
-
 from jsonschema import RefResolver, FormatChecker
 
-# TODO: FUL-3505 and FUL-3376
-from werkzeug import cached_property
-from werkzeug.datastructures import Headers
-from werkzeug.exceptions import HTTPException, MethodNotAllowed, NotFound, NotAcceptable, InternalServerError
-from werkzeug.http import HTTP_STATUS_CODES
-from werkzeug.wrappers import Response as ResponseBase
-
 from ._compat import OrderedDict
-# from .mask import ParseError, MaskError
 from .namespace import Namespace
-# from .postman import PostmanCollectionV1
 from .swagger import Swagger
 from .utils import default_id, camel_to_dash # deleted unpack
 
@@ -41,15 +18,10 @@ from .wsgiservice_adaptors import get_resource_http_methods
 # List headers that should never be handled by Flask-RESTPlus
 HEADERS_BLACKLIST = ('Content-Length',)
 
-
 # Replaced output_json by None (cf. wsgiservice.Resource content negotiation)
-# TODO: FUL-3376
 DEFAULT_REPRESENTATIONS = [('application/json', None)]
 
-### wsgiservice-specific imoprts
 import wsgiservice
-
-
 
 
 class Api(object):
@@ -149,9 +121,6 @@ class Api(object):
         # TODO: FUL-3376 (probably deletable)
         self.resources = []
 
-
-    # NOTE: init_app and _init_app methods deleted here
-    # These methods mainly served to enable the various initialization models of Flask
 
     # TODO: Make the Swagger specification resources configurable (such as e.g. with a predicate
     #       that specifies whether to include an endpoint in the documentation)
@@ -256,8 +225,6 @@ class Api(object):
         '''
         return self.prefix
 
-    # Swagger schema as a dictionary
-    # TODO: FUL-3376 make it accessible as a @property
     def __schema__(self):
         '''
         The Swagger specifications/schema for this API
@@ -268,186 +235,7 @@ class Api(object):
             self._schema = Swagger(self).as_dict()
         return self._schema
 
-    # ### error handler registration ###
-    # # TODO: FUL-3505
-    # def errorhandler(self, exception):
-    #     '''A decorator to register an error handler for a given exception'''
-    #     if inspect.isclass(exception) and issubclass(exception, Exception):
-    #         # Register an error handler for a given exception
-    #         def wrapper(func):
-    #             self.error_handlers[exception] = func
-    #             return func
-    #         return wrapper
-    #     else:
-    #         # Register the default error handler
-    #         self._default_error_handler = exception
-    #         return exception
-    #
-    # # TODO: FUL-3505
-    # def owns_endpoint(self, endpoint):
-    #     '''
-    #     Tests if an endpoint name (not path) belongs to this Api.
-    #     Takes into account the Blueprint name part of the endpoint name.
-    #
-    #     :param str endpoint: The name of the endpoint being checked
-    #     :return: bool
-    #     '''
-    #
-    #     if self.blueprint:
-    #         if endpoint.startswith(self.blueprint.name):
-    #             endpoint = endpoint.split(self.blueprint.name + '.', 1)[-1]
-    #         else:
-    #             return False
-    #     return endpoint in self.endpoints
-    #
-    # # TODO: FUL-3505
-    # def _should_use_fr_error_handler(self):
-    #     '''
-    #     Determine if error should be handled with FR or default Flask
-    #
-    #     The goal is to return Flask error handlers for non-FR-related routes,
-    #     and FR errors (with the correct media type) for FR endpoints. This
-    #     method currently handles 404 and 405 errors.
-    #
-    #     :return: bool
-    #     '''
-    #     adapter = current_app.create_url_adapter(request)
-    #
-    #     try:
-    #         adapter.match()
-    #     except MethodNotAllowed as e:
-    #         # Check if the other HTTP methods at this url would hit the Api
-    #         valid_route_method = e.valid_methods[0]
-    #         rule, _ = adapter.match(method=valid_route_method, return_rule=True)
-    #         return self.owns_endpoint(rule.endpoint)
-    #     except NotFound:
-    #         return self.catch_all_404s
-    #     except:
-    #         # Werkzeug throws other kinds of exceptions, such as Redirect
-    #         pass
-    #
-    # # TODO: FUL-3505
-    # def _has_fr_route(self):
-    #     '''Encapsulating the rules for whether the request was to a Flask endpoint'''
-    #     # 404's, 405's, which might not have a url_rule
-    #     if self._should_use_fr_error_handler():
-    #         return True
-    #     # for all other errors, just check if FR dispatched the route
-    #     if not request.url_rule:
-    #         return False
-    #     return self.owns_endpoint(request.url_rule.endpoint)
-    #
-    # # TODO: FUL-3505
-    # def error_router(self, original_handler, e):
-    #     '''
-    #     This function decides whether the error occured in a flask-restplus
-    #     endpoint or not. If it happened in a flask-restplus endpoint, our
-    #     handler will be dispatched. If it happened in an unrelated view, the
-    #     app's original error handler will be dispatched.
-    #     In the event that the error occurred in a flask-restplus endpoint but
-    #     the local handler can't resolve the situation, the router will fall
-    #     back onto the original_handler as last resort.
-    #
-    #     :param function original_handler: the original Flask error handler for the app
-    #     :param Exception e: the exception raised while handling the request
-    #     '''
-    #     if self._has_fr_route():
-    #         try:
-    #             return self.handle_error(e)
-    #         except Exception:
-    #             pass  # Fall through to original handler
-    #     return original_handler(e)
-    #
-    # # TODO: FUL-3505
-    # def handle_error(self, e):
-    #     '''
-    #     Error handler for the API transforms a raised exception into a Flask response,
-    #     with the appropriate HTTP status code and body.
-    #
-    #     :param Exception e: the raised Exception object
-    #
-    #     '''
-    #     got_request_exception.send(current_app._get_current_object(), exception=e)
-    #
-    #     headers = Headers()
-    #     if e.__class__ in self.error_handlers:
-    #         handler = self.error_handlers[e.__class__]
-    #         result = handler(e)
-    #         default_data, code, headers = unpack(result, 500)
-    #     elif isinstance(e, HTTPException):
-    #         code = e.code
-    #         default_data = {
-    #             'message': getattr(e, 'description', HTTP_STATUS_CODES.get(code, ''))
-    #         }
-    #         headers = e.get_response().headers
-    #     elif self._default_error_handler:
-    #         result = self._default_error_handler(e)
-    #         default_data, code, headers = unpack(result, 500)
-    #     else:
-    #         code = 500
-    #         default_data = {
-    #             'message': HTTP_STATUS_CODES.get(code, str(e)),
-    #         }
-    #
-    #     default_data['message'] = default_data.get('message', str(e))
-    #     data = getattr(e, 'data', default_data)
-    #     fallback_mediatype = None
-    #
-    #     if code >= 500:
-    #         exc_info = sys.exc_info()
-    #         if exc_info[1] is None:
-    #             exc_info = None
-    #         current_app.log_exception(exc_info)
-    #
-    #     elif code == 404 and current_app.config.get("ERROR_404_HELP", True):
-    #         data['message'] = self._help_on_404(data.get('message', None))
-    #
-    #     elif code == 406 and self.default_mediatype is None:
-    #         # if we are handling NotAcceptable (406), make sure that
-    #         # make_response uses a representation we support as the
-    #         # default mediatype (so that make_response doesn't throw
-    #         # another NotAcceptable error).
-    #         supported_mediatypes = list(self.representations.keys())
-    #         fallback_mediatype = supported_mediatypes[0] if supported_mediatypes else "text/plain"
-    #
-    #     # Remove blacklisted headers
-    #     for header in HEADERS_BLACKLIST:
-    #         headers.pop(header, None)
-    #
-    #     resp = self.make_response(data, code, headers, fallback_mediatype=fallback_mediatype)
-    #
-    #     if code == 401:
-    #         resp = self.unauthorized(resp)
-    #     return resp
-    #
-    # # TODO: FUL-3505
-    # def _help_on_404(self, message=None):
-    #     rules = dict([(RE_RULES.sub('', rule.rule), rule.rule)
-    #                   for rule in current_app.url_map.iter_rules()])
-    #     close_matches = difflib.get_close_matches(request.path, rules.keys())
-    #     if close_matches:
-    #         # If we already have a message, add punctuation and continue it.
-    #         message = ''.join((
-    #             (message.rstrip('.') + '. ') if message else '',
-    #             'You have requested this URI [',
-    #             request.path,
-    #             '] but did you mean ',
-    #             ' or '.join((rules[match] for match in close_matches)),
-    #             ' ?',
-    #         ))
-    #     return message
 
-    # #TODO: FUL-3376 (decide whether this should be added as a feature)
-    ### Postman API specification ###
-    # def as_postman(self, urlvars=False, swagger=False):
-    #     '''
-    #     Serialize the API as Postman collection (v1)
-    #
-    #     :param bool urlvars: whether to include or not placeholders for query strings
-    #     :param bool swagger: whether to include or not the swagger.json specifications
-    #
-    #     '''
-    #     return PostmanCollectionV1(self, swagger=swagger).as_dict(urlvars=urlvars)
 
     @property
     def refresolver(self):
@@ -458,20 +246,6 @@ class Api(object):
             self._refresolver = RefResolver.from_schema(self.__schema__)
         return self._refresolver
 
-    # NOTE: deleted representation here
-    # Was used to define response transformations to custom custom media types such as JSON/XML/etc.
-
-    # TODO: FUL-3375
-    # ### security: unauthorized request ###
-    # def unauthorized(self, response):
-    #     '''Given a response, change it to ask for credentials'''
-    #
-    #     if self.serve_challenge_on_401:
-    #         realm = current_app.config.get("HTTP_BASIC_AUTH_REALM", "flask-restplus")
-    #         challenge = u"{0} realm=\"{1}\"".format("Basic", realm)
-    #
-    #         response.headers['WWW-Authenticate'] = challenge
-    #     return response
 
     # TODO: FUL-3376 (Remove if possible)
     ###  Retrieve URL path for a particular resource ###
@@ -488,24 +262,12 @@ class Api(object):
             return None
 
 
-# # TODO: FUL-3505
-# def mask_parse_error_handler(error):
-#     '''When a mask can't be parsed'''
-#     return {'message': 'Mask parse error: {0}'.format(error)}, 400
-#
-#
-# def mask_error_handler(error):
-#     '''When any error occurs on mask'''
-#     return {'message': 'Mask error: {0}'.format(error)}, 400
 
-
-### Swagger Documentation resource factory
 def generate_swagger_resource(api, swagger_path):
     '''
     Returns a wsgiservice Swagger documentation Resource class that binds the Api instance
     '''
 
-    # @namespace.route(swagger_path)
     class SwaggerResource(wsgiservice.Resource):
         '''
         Resource for the Swagger specification of the bound Api

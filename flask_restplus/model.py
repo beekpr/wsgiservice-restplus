@@ -8,8 +8,6 @@ import warnings
 from collections import MutableMapping
 from six import iteritems, itervalues
 
-from .mask import Mask
-
 from jsonschema import Draft4Validator
 from jsonschema.exceptions import ValidationError
 
@@ -30,7 +28,6 @@ class Model(dict, MutableMapping):
     A thin wrapper on dict to store API doc metadata.
 
     :param str name: The model public name
-    :param str mask: an optional default model mask
     '''
     def __init__(self, name, *args, **kwargs):
         self.__apidoc__ = {
@@ -38,9 +35,6 @@ class Model(dict, MutableMapping):
         }
         self.name = name
         self.__parents__ = []
-        self.__mask__ = kwargs.pop('mask', None)
-        if self.__mask__ and not isinstance(self.__mask__, Mask):
-            self.__mask__ = Mask(self.__mask__)
         super(Model, self).__init__(*args, **kwargs)
 
         def instance_clone(name, *parents):

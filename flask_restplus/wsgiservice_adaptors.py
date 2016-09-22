@@ -1,7 +1,6 @@
 from wsgiservice.resource import Resource as wsgiservice_resource
 
 
-
 def get_resource_http_methods(resource):
     '''
     Returns HTTP request handler methods defined on wsgiservice resource class
