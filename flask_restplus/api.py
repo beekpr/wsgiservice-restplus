@@ -114,47 +114,15 @@ class Api(object):
 
         self.decorators = decorators if decorators else []
 
-        # TODO: FUL-3505
-        # self.catch_all_404s = catch_all_404s
-        # self.serve_challenge_on_401 = serve_challenge_on_401
-
-        # TODO: FUL-3376 (probably deletable)
         self.resources = []
 
 
-    # TODO: Make the Swagger specification resources configurable (such as e.g. with a predicate
-    #       that specifies whether to include an endpoint in the documentation)
-    def create_wsgiservice_app(self):
-        '''
-        Creates a :class:`wsgiservice.application.Application` instance from the resources owned by self (the namespaces of this Api instance)
-        '''
-
-        SwaggerResourceClass = generate_swagger_resource(api=self, swagger_path=self._swagger_path)
-
-        self.resources.append((SwaggerResourceClass, self._swagger_path, {}))
-
-        # Check for resource._path == url (Api.prefix ignored)
-        for resource, url, _ in self.resources:
-            if getattr(resource,'_path', None) is not None:
-                if resource._path != url:
-                    raise Exception # raise a path error exception due to inconsistent mount point
-
-        return wsgiservice.get_app(
-            {resource.__name__ : resource for resource, _, _ in self.resources})
-
-
-    # NOTE: self.default_namespace deleted here as all namespaces must be added manually
-
-
-    ## Add resource, assigned urls and constructor named/kw-args to sequence of resources
     def register_resource(self, namespace, resource, url, **kwargs):
 
         kwargs['endpoint'] = default_endpoint(resource, namespace)
 
         self.resources.append((resource, url, kwargs))
 
-
-    # NOTE: default_endpoint method moved outside this instance (as not dependent on internal attributes)
 
     def add_namespace(self, ns):
 
@@ -191,17 +159,23 @@ class Api(object):
         return True
 
 
-    # TODO: FUL-3376 Remove this at later stage (Api should become a namespace collection)
     def get_resources(self):
-        '''Get resources held by this instance'''
-        resources = {}
+        """Get resources held by this instance, then create and add SwaggerResourceClass as well
+        (holds swagger.json)"""
+
+        SwaggerResourceClass = generate_swagger_resource(api=self, swagger_path=self._swagger_path)
+        self.resources.append((SwaggerResourceClass, self._swagger_path, {}))
+
+        resources_dict = {}
         for ns in self.namespaces:
             for resource, _, _ in ns.resources:
-                resources[resource.__name__] = resource
-        return resources
+                resources_dict[resource.__name__] = resource
+
+        resources_dict[SwaggerResourceClass.__name__] = SwaggerResourceClass
+
+        return resources_dict
 
 
-    # TODO: FUL-3376: replace prefix by a more reasonable name such as _base_path ###
     @property
     def base_path(self):
         '''
@@ -220,7 +194,6 @@ class Api(object):
         if not self._schema:
             self._schema = Swagger(self).as_dict()
         return self._schema
-
 
 
     @property

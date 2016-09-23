@@ -31,14 +31,13 @@ class Namespace(object):
         self.description = description
         self.path = path.rstrip('/') + '/' if path else ('/' + name + '/')
 
-        # self._schema = None # unused attribute
         self._validate = validate
         self.models = {}
-        # # TODO: Provide explicit security/error handling interface instead of passing callbacks
-        # self.decorators = decorators if decorators else []
+
+        self.decorators = decorators if decorators else []
+
         self.resources = []
-        # self.error_handlers = {}
-        # self.default_error_handler = None
+
         self.apis = []
         if 'api' in kwargs:
             self.apis.append(kwargs['api'])
