@@ -97,10 +97,9 @@ class Namespace(object):
             return cls
         return wrapper
 
-    # Adds documentation dictionary (obtained from keyword arguments passed to Namespace.doc)
-    # with prexisting __apidoc__ function/class attribute (after adapting 'params' and 'parser'/
-    # 'body' entries). In case of doc == False the __apidoc__ attribute is set to false
     def _handle_api_doc(self, cls, doc):
+        """Adds __apidoc__ to a given class with adapted doc dictionary content"""
+
         if doc is False:
             cls.__apidoc__ = False
             return
@@ -118,7 +117,8 @@ class Namespace(object):
         cls.__apidoc__ = merge(getattr(cls, '__apidoc__', {}), doc)
 
     def doc(self, shortcut=None, **kwargs):
-        '''A decorator to add some api documentation to the decorated object'''
+        """A decorator to add some api documentation to the decorated object"""
+
         if isinstance(shortcut, six.text_type):
             kwargs['id'] = shortcut
 
