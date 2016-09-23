@@ -146,7 +146,6 @@ class Api(object):
     # NOTE: self.default_namespace deleted here as all namespaces must be added manually
 
 
-    # TODO: FUL-3376 (probably deletable to do copy elision)
     ## Add resource, assigned urls and constructor named/kw-args to sequence of resources
     def register_resource(self, namespace, resource, url, **kwargs):
 
@@ -155,17 +154,8 @@ class Api(object):
         self.resources.append((resource, url, kwargs))
 
 
-    # NOTE: _register_view method deleted here
-    # Constructed flask view function(s) from resource class (including binding of resource constructor to
-    # named/kw-arguments), application of all Api-level decorators to the resulting view function and return
-    # value transformation based on requested content type registering the view with the flask.Application
-    # instance.
-
     # NOTE: default_endpoint method moved outside this instance (as not dependent on internal attributes)
 
-    # Add namespace to list in this Api instance and this Api instance to list of Api objects
-    # in namespace
-    # # TODO: FUL-3505
     def add_namespace(self, ns):
 
         # Check whether namespace security requirements are contained in API security definitions
@@ -177,13 +167,9 @@ class Api(object):
             if self not in ns.apis:
                 ns.apis.append(self)
 
-        # Copy all resources
-        # TODO: FUL-3376 copy elision?
         for resource, url, kwargs in ns.resources:
             self.register_resource(ns, resource, url, **kwargs)
 
-        # Copy all models
-        # TODO: FUL-3376 copy elision?
         for name, definition in ns.models.items():
             self.models[name] = definition
 

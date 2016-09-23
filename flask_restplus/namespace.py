@@ -5,23 +5,13 @@ import inspect
 import six
 import warnings
 
-from wsgiservice.resource import Resource as wsgiservice_resource
-
 from inspect import isclass
-
-# from .errors import abort
-# from .marshalling import marshal, marshal_with
 from .model import Model
-# from .reqparse import RequestParser
 from .utils import merge
-
 
 from wsgiservice_adaptors import get_resource_http_methods
 
 
-# TODO: FUL-3375 Specify authentication schemes on the namespace level
-# TODO: FUL-3505 Possibly specify specialized error handling on the namespace level
-# TODO: FUL-3376
 class Namespace(object):
 
     '''
@@ -53,9 +43,6 @@ class Namespace(object):
         if 'api' in kwargs:
             self.apis.append(kwargs['api'])
 
-    ### Add resource to namespace (maintained in triple of resource class, urls (with added namespace prefix path)
-    ### and any extra labels such as endpoint name, resource constructor named/keyword arguments in list/tuple or dict
-    ### form)
     def add_resource(self, resource, url, **kwargs):
         '''
         Register a Resource for a given API Namespace
@@ -110,7 +97,6 @@ class Namespace(object):
             return cls
         return wrapper
 
-
     # Adds documentation dictionary (obtained from keyword arguments passed to Namespace.doc)
     # with prexisting __apidoc__ function/class attribute (after adapting 'params' and 'parser'/
     # 'body' entries). In case of doc == False the __apidoc__ attribute is set to false
@@ -148,21 +134,7 @@ class Namespace(object):
         '''A decorator to hide a resource or a method from specifications'''
         return self.doc(False)(func)
 
-    # ### error handling
-    # # TODO: FUL-3505
-    # def abort(self, *args, **kwargs):
-    #     '''
-    #     Properly abort the current request
-    #
-    #     See: :func:`~flask_restplus.errors.abort`
-    #     '''
-    #     abort(*args, **kwargs)
 
-
-    ### Adding models ("interface types") to the Namespace.models Model instance dictionary
-    ### that contains parts of the Model type hierarchy relevant to this namespace of the API
-
-    # Add model to the namespace
     def add_model(self, name, definition):
         self.models[name] = definition
         for api in self.apis:
@@ -216,9 +188,6 @@ class Namespace(object):
         return self.add_model(name, model)
 
 
-    ### Parameter models ###
-
-    # Parameter model annotation (validation is done in the Resource base class)
     def expect(self, *inputs, **kwargs):
         '''
         A decorator to Specify the expected input model
@@ -237,24 +206,20 @@ class Namespace(object):
         return self.doc(**params)
 
 
-    ### Response models ###
-
-    # Possibly affects marshal_with
     def as_list(self, field):
         '''Allow to specify nested lists for documentation'''
         field.__apidoc__ = merge(getattr(field, '__apidoc__', {}), {'as_list': True})
         return field
 
-    # Response model annotation and rearrangement of return value of decorated method
-    # TODO: FUL-3376 mask
+
     def marshal_with(self, fields, as_list=False, code=200, description=None, **kwargs):
         '''
         A decorator specifying the fields to use for serialization.
 
         :param bool as_list: Indicate that the return type is a list (for the documentation)
         :param int code: Optionally give the expected HTTP response code if its different from 200
-
         '''
+
         def wrapper(func):
             doc = {
                 'responses': {
@@ -267,15 +232,12 @@ class Namespace(object):
             return func
         return wrapper
 
+
     def marshal_list_with(self, fields, **kwargs):
         '''A shortcut decorator for :meth:`~Api.marshal_with` with ``as_list=True``'''
         return self.marshal_with(fields, True, **kwargs)
 
 
-    ### Error handler registry ###
-    # # TODO: FUL-3505
-    # Error handling in this way is Flask-specific and implemented differently in the
-    # __call__ operator of the wsgiservice.Resource base class
     def errorhandler(self, exception):
         '''A decorator to register an error handler for a given exception'''
         if inspect.isclass(exception) and issubclass(exception, Exception):
@@ -290,7 +252,6 @@ class Namespace(object):
             return exception
 
 
-    ### Simple parameter annotation ###
     def param(self, name, description=None, _in='query', **kwargs):
         '''
         A decorator to specify one of the expected parameters
@@ -304,7 +265,7 @@ class Namespace(object):
         param['description'] = description
         return self.doc(params={name: param})
 
-    ### Simple response annotation ###
+
     def response(self, code, description, model=None, **kwargs):
         '''
         A decorator to specify one of the expected responses
@@ -316,7 +277,7 @@ class Namespace(object):
         '''
         return self.doc(responses={code: (description, model) if model else description})
 
-    ### Simple header annotation ###
+
     def header(self, name, description=None, **kwargs):
         '''
         A decorator to specify one of the expected headers
@@ -327,7 +288,7 @@ class Namespace(object):
         '''
         return self.param(name, description=description, _in='header', **kwargs)
 
-    ### Simple deprecated annotation ###
+
     def deprecated(self, func):
         '''A decorator to mark a resource or a method as deprecated'''
         return self.doc(deprecated=True)(func)
@@ -344,6 +305,7 @@ class Namespace(object):
         def wrapper(documented):
             return self.doc(security=args)(documented)
         return wrapper
+
 
 def unshortcut_params_description(data):
     if 'params' in data:

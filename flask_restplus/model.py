@@ -23,7 +23,6 @@ def instance(cls):
     return cls
 
 
-
 class Model(dict, MutableMapping):
     '''
     A thin wrapper on dict to store API doc metadata.
@@ -31,6 +30,7 @@ class Model(dict, MutableMapping):
     :param str name: The model public name
     :param str mask: an optional default model mask
     '''
+
     def __init__(self, name, *args, **kwargs):
         self.__apidoc__ = {
             'name': name
@@ -49,7 +49,7 @@ class Model(dict, MutableMapping):
             return self.__class__.inherit(name, self, *parents)
         self.inherit = instance_inherit
 
-    @property # TODO: was werkzeug.cached_property
+    @property  # TODO: was werkzeug.cached_property
     def resolved(self):
         '''
         Resolve real fields before submitting them to marshal
