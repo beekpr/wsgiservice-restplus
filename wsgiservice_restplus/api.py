@@ -3,14 +3,14 @@ from __future__ import unicode_literals
 
 from jsonschema import RefResolver, FormatChecker
 
-from ._compat import OrderedDict
-from .namespace import Namespace
-from .swagger import Swagger
-from .utils import default_id, camel_to_dash # deleted unpack
+from wsgiservice_restplus._compat import OrderedDict
+from wsgiservice_restplus.namespace import Namespace
+from wsgiservice_restplus.swagger import Swagger
+from wsgiservice_restplus.utils import default_id, camel_to_dash # deleted unpack
 
-from .errors import SecurityError
+from wsgiservice_restplus.errors import SecurityError
 
-from .wsgiservice_adaptors import get_resource_http_methods
+from wsgiservice_restplus.wsgiservice_adaptors import get_resource_http_methods
 
 # ### TODO: Would need to be readapted to RE_RULES = re.compile('({.*})')
 # RE_RULES = re.compile('(<.*>)')
@@ -21,7 +21,7 @@ HEADERS_BLACKLIST = ('Content-Length',)
 # Replaced output_json by None (cf. wsgiservice.Resource content negotiation)
 DEFAULT_REPRESENTATIONS = [('application/json', None)]
 
-import wsgiservice
+from wsgiservice import Resource as WSGIResource
 
 
 class Api(object):
@@ -227,7 +227,7 @@ def generate_swagger_resource(api, swagger_path):
     Returns a wsgiservice Swagger documentation Resource class that binds the Api instance
     '''
 
-    class SwaggerResource(wsgiservice.Resource):
+    class SwaggerResource(WSGIResource):
         '''
         Resource for the Swagger specification of the bound Api
         '''
