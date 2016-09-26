@@ -11,8 +11,6 @@ __all__ = (
     '__version__',
     '__description__',
     'Api',
-    # 'Resource',
-    # 'apidoc',
     'Model',
     'fields',
     'inputs',

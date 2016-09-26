@@ -9,9 +9,9 @@ from werkzeug.exceptions import BadRequest
 from werkzeug.wrappers import Request
 from werkzeug.datastructures import FileStorage, MultiDict
 
-from flask_restplus import Api, Model, fields
-from flask_restplus.errors import SpecsError
-from flask_restplus.reqparse import Argument, RequestParser, ParseResult
+from wsgiservice_restplus import Api, Model, fields
+from wsgiservice_restplus.errors import SpecsError
+from wsgiservice_restplus.reqparse import Argument, RequestParser, ParseResult
 
 from . import TestCase, Mock, patch
 
@@ -38,7 +38,7 @@ class ReqParseTestCase(TestCase):
             args = parser.parse_args()
             self.assertEqual(args['todo'], {'task': 'aaa'})
 
-    @patch('flask_restplus.reqparse.abort')
+    @patch('wsgiservice_restplus.reqparse.abort')
     def test_help_with_error_msg(self, abort):
         parser = RequestParser()
         parser.add_argument('foo', choices=('one', 'two'), help='Bad choice: {error_msg}')
@@ -49,7 +49,7 @@ class ReqParseTestCase(TestCase):
         expected = {'foo': 'Bad choice: three is not a valid choice'}
         abort.assert_called_with(400, 'Input payload validation failed', errors=expected)
 
-    @patch('flask_restplus.reqparse.abort')
+    @patch('wsgiservice_restplus.reqparse.abort')
     def test_help_no_error_msg(self, abort):
         parser = RequestParser()
         parser.add_argument('foo', choices=['one', 'two'], help='Please select a valid choice')
@@ -60,7 +60,7 @@ class ReqParseTestCase(TestCase):
         expected = {'foo': 'Please select a valid choice'}
         abort.assert_called_with(400, 'Input payload validation failed', errors=expected)
 
-    @patch('flask_restplus.reqparse.abort', side_effect=BadRequest('Bad Request'))
+    @patch('wsgiservice_restplus.reqparse.abort', side_effect=BadRequest('Bad Request'))
     def test_no_help(self, abort):
         parser = RequestParser()
         parser.add_argument('foo', choices=['one', 'two'])
@@ -774,7 +774,7 @@ class ArgumentTest(TestCase):
         self.assertEqual(arg.operators[0], '=')
         self.assertEqual(len(arg.operators), 1)
 
-    @patch('flask_restplus.reqparse.six')
+    @patch('wsgiservice_restplus.reqparse.six')
     def test_default_type(self, mock_six):
         arg = Argument('foo')
         sentinel = object()

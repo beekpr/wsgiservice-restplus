@@ -10,49 +10,11 @@ from setuptools import setup, find_packages
 
 RE_REQUIREMENT = re.compile(r'^\s*-r\s*(?P<filename>.*)$')
 
-PYPI_RST_FILTERS = (
-    # Replace code-blocks
-    (r'\.\.\s? code-block::\s*(\w|\+)+', '::'),
-    # Remove all badges
-    (r'\.\. image:: .*', ''),
-    (r'\s+:target: .*', ''),
-    (r'\s+:alt: .*', ''),
-    # Replace Python crossreferences by simple monospace
-    (r':(?:class|func|meth|mod|attr|obj|exc|data|const):`~(?:\w+\.)*(\w+)`', r'``\1``'),
-    (r':(?:class|func|meth|mod|attr|obj|exc|data|const):`([^`]+)`', r'``\1``'),
-    # replace doc references
-    (r':doc:`(.+) <(.*)>`', r'`\1 <http://flask-restplus.readthedocs.org/en/stable\2.html>`_'),
-    # replace issues references
-    (r':issue:`(.+)`', r'`#\1 <https://github.com/noirbizarre/flask-restplus/issues/\1>`_'),
-    # Drop unrecognized currentmodule
-    (r'\.\. currentmodule:: .*', ''),
-)
 
-
-def rst(filename):
-    '''
-    Load rst file and sanitize it for PyPI.
-    Remove unsupported github tags:
-     - code-block directive
-     - all badges
-    '''
-    content = open(filename).read()
-    for regex, replacement in PYPI_RST_FILTERS:
-        content = re.sub(regex, replacement, content)
-    return content
-
-
-long_description = '\n'.join((
-    rst('README.rst'),
-    rst('CHANGELOG.rst'),
-    ''
-))
-
-
-exec(compile(open('flask_restplus/__about__.py').read(), 'flask_restplus/__about__.py', 'exec'))
+exec(compile(open('wsgiservice_restplus/__about__.py').read(), 'wsgiservice_restplus/__about__.py', 'exec'))
 
 tests_require = ['nose', 'rednose', 'blinker', 'tzlocal']
-install_requires = ['Flask>=0.8', 'six>=1.3.0', 'jsonschema', 'pytz', 'aniso8601>=0.82']
+install_requires = ['six>=1.3.0', 'jsonschema', 'pytz', 'aniso8601>=0.82']
 doc_require = ['sphinx', 'alabaster', 'sphinx_issues']
 dev_requires = ['flake8', 'minibench', 'tox', 'invoke'] + tests_require + doc_require
 

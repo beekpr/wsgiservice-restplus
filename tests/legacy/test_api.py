@@ -7,8 +7,8 @@ import flask
 from werkzeug.exceptions import HTTPException, Unauthorized, BadRequest, NotFound
 from werkzeug.http import quote_etag, unquote_etag
 
-import flask_restplus as restplus
-from flask_restplus._compat import OrderedDict
+import wsgiservice_restplus as restplus
+from wsgiservice_restplus._compat import OrderedDict
 from json import dumps, loads, JSONEncoder
 
 from nose.tools import assert_equals, assert_true, assert_false  # you need it for tests in form of continuations

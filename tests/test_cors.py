@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from flask_restplus import Api, Resource, cors
+from wsgiservice_restplus import Api, Resource, cors
 
 from . import TestCase
 

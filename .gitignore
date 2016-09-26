@@ -57,7 +57,7 @@ coverage.xml
 doc/_build/
 
 # Specifics
-flask_restplus/static/bower
+wsgiservice_restplus/static/bower
 
 # PyCharm project setup files:
 .idea/*

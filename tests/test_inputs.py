@@ -9,7 +9,7 @@ import pytz
 
 from six import text_type
 
-from flask_restplus import inputs
+from wsgiservice_restplus import inputs
 
 from . import assert_equal, assert_raises
 

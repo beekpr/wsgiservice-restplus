@@ -8,9 +8,9 @@ from functools import partial
 import pytz
 
 from flask import Blueprint, Flask
-from flask_restplus import fields, Api
+from wsgiservice_restplus import fields, Api
 
-from flask_restplus._compat import OrderedDict
+from wsgiservice_restplus._compat import OrderedDict
 
 from . import Mock, assert_equal, assert_raises, assert_in, assert_not_in, assert_is_none
 

@@ -3,9 +3,9 @@ from __future__ import unicode_literals
 
 from flask import url_for, Blueprint
 
-import flask_restplus as restplus
+import wsgiservice_restplus as restplus
 
-from flask_restplus import Namespace, Api
+from wsgiservice_restplus import Namespace, Api
 
 from . import TestCase
 

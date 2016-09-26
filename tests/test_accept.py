@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import flask_restplus as restplus
+import wsgiservice_restplus as restplus
 
 from . import TestCase
 

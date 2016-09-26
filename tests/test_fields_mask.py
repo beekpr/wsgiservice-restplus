@@ -6,7 +6,7 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 
-from flask_restplus import mask, Api, Resource, fields, marshal, Mask
+from wsgiservice_restplus import mask, Api, Resource, fields, marshal, Mask
 
 from . import TestCase
 

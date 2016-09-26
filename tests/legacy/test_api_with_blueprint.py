@@ -6,7 +6,7 @@ import six
 
 from flask import Blueprint, request
 
-import flask_restplus as restplus
+import wsgiservice_restplus as restplus
 
 from nose.tools import assert_true, assert_false  # you need it for tests in form of continuations
 

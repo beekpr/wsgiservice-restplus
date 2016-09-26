@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 import json
 
-import flask_restplus as restplus
+import wsgiservice_restplus as restplus
 
 from . import TestCase
 

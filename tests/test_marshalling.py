@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from flask_restplus import (
+from wsgiservice_restplus import (
     marshal, marshal_with, marshal_with_field, fields, Api, Resource
 )
 
