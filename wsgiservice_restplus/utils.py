@@ -6,7 +6,7 @@ import re
 from copy import deepcopy
 from six import iteritems
 
-from ._compat import OrderedDict
+from wsgiservice_restplus._compat import OrderedDict
 
 FIRST_CAP_RE = re.compile('(.)([A-Z][a-z]+)')
 ALL_CAP_RE = re.compile('([a-z0-9])([A-Z])')

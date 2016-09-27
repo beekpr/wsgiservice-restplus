@@ -1,22 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# flake8: noqa
+
 from __future__ import unicode_literals
 
-import re
 import sys
-
 from setuptools import setup, find_packages
 
-RE_REQUIREMENT = re.compile(r'^\s*-r\s*(?P<filename>.*)$')
+from __about__ import __version__
+from __about__ import __description__
+from __about__ import long_description
 
-
-exec(compile(open('wsgiservice_restplus/__about__.py').read(), 'wsgiservice_restplus/__about__.py', 'exec'))
+with open('requirements.txt', 'r') as handle:
+    install_requires = [ m.rstrip('\n') for m in list(handle) ]
 
 tests_require = ['nose', 'rednose', 'blinker', 'tzlocal']
-install_requires = ['six>=1.3.0', 'jsonschema', 'pytz', 'aniso8601>=0.82']
-doc_require = ['sphinx', 'alabaster', 'sphinx_issues']
-dev_requires = ['flake8', 'minibench', 'tox', 'invoke'] + tests_require + doc_require
+dev_requires = ['minibench', 'tox', 'invoke'] + tests_require
 
 
 if sys.version_info[0:2] < (2, 7):
@@ -29,42 +27,20 @@ except:
     tests_require += ['mock']
 
 setup(
-    name='flask-restplus',
+    name='wsgiservice_restplus',
     version=__version__,
     description=__description__,
     long_description=long_description,
-    author='Axel Haustant',
-    author_email='axel@data.gouv.fr',
-    packages=find_packages(exclude=['tests', 'tests.*']),
+    authors='Filip Ciesielski, Barnabás Südy',
+    author_email='filip.ciesielski@beekeeper.io, barnabas@beekeeper.io',
+
     include_package_data=True,
+    packages=find_packages(exclude=['tests', 'tests.*']),
     install_requires=install_requires,
     tests_require=tests_require,
     extras_require={
         'test': tests_require,
-        'doc': doc_require,
         'dev': dev_requires,
     },
-    license='MIT',
-    use_2to3=True,
     zip_safe=False,
-    keywords='',
-    classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Programming Language :: Python',
-        'Environment :: Web Environment',
-        'Operating System :: OS Independent',
-        'Intended Audience :: Developers',
-        'Topic :: System :: Software Distribution',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: Implementation :: PyPy',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'License :: OSI Approved :: MIT License',
-    ],
 )
