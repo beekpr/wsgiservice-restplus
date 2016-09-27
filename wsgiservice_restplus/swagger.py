@@ -9,13 +9,13 @@ from six import string_types, itervalues, iteritems, iterkeys
 
 # from flask import current_app # TODO: FUL-3376 Delete once hostname and masks dependencies are dealt with
 
-from ._compat import OrderedDict
+from wsgiservice_restplus._compat import OrderedDict
 
-from . import fields
-from .model import Model
-from .utils import merge, not_none, not_none_sorted
+from wsgiservice_restplus import fields
+from wsgiservice_restplus.model import Model
+from wsgiservice_restplus.utils import merge, not_none, not_none_sorted
 
-from .wsgiservice_adaptors import get_resource_http_methods
+from wsgiservice_restplus.wsgiservice_adaptors import get_resource_http_methods
 
 
 PATH_TYPES = {

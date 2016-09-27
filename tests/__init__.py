@@ -21,7 +21,7 @@ from contextlib import contextmanager
 from flask import Flask
 
 
-from nose.tools import assert_equal, assert_raises  # noqa
+from nose.tools import assert_equal, assert_raises
 try:
     from nose.tools import assert_equal, assert_raises, assert_in, assert_not_in, assert_is_none  # noqa
 except:

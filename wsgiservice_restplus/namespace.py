@@ -6,8 +6,8 @@ import six
 import warnings
 
 from inspect import isclass
-from .model import Model
-from .utils import merge
+from wsgiservice_restplus.model import Model
+from wsgiservice_restplus.utils import merge
 
 from wsgiservice_adaptors import get_resource_http_methods
 
