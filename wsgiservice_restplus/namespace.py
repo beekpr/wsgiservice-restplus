@@ -290,7 +290,7 @@ class Namespace(object):
         return self.doc(deprecated=True)(func)
 
 
-    def security(self, *args):
+    def security(self, *security_definition_names):
         '''
         Operation security decorator
 
@@ -299,7 +299,7 @@ class Namespace(object):
         '''
 
         def wrapper(documented):
-            return self.doc(security=args)(documented)
+            return self.doc(security=security_definition_names)(documented)
         return wrapper
 
 
