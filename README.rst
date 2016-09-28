@@ -1,6 +1,6 @@
-==============================
-Flask RestPlus - NEEDS UPDATE!
-==============================
+=======================================
+WSGI Service RestPlus (NEEDS UPDATING!)
+=======================================
 
 
 Flask-RESTPlus is an extension for `wsgiservice`_ that adds support for quickly building REST APIs.
