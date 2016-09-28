@@ -7,8 +7,6 @@ from inspect import isclass, getdoc
 from collections import Hashable
 from six import string_types, itervalues, iteritems, iterkeys
 
-# from flask import current_app # TODO: FUL-3376 Delete once hostname and masks dependencies are dealt with
-
 from wsgiservice_restplus._compat import OrderedDict
 
 from wsgiservice_restplus import fields
@@ -34,7 +32,6 @@ PY_TYPES = {
 
 ### Finds wsgiservice path parameters in URL and binds groups to variable name
 RE_PARAMS = re.compile(r'{([^{}]+)}')
-
 
 ### TODO: FUL-3376: Adapt to wsgiservice default
 DEFAULT_RESPONSE_DESCRIPTION = 'Success'
@@ -285,10 +282,6 @@ class Swagger(object):
                     })
         return params
 
-    ### return a dictionary of error handling cases mapping exception name to
-    ### description, header request parameter name -> type & additional info mapping and
-    ### response models
-    ### TODO: FUL-3505: Develop error interface specification for wsgiservice/beekeeper
     def register_errors(self):
         responses = {}
         # for exception, handler in self.api.error_handlers.items():
@@ -308,10 +301,10 @@ class Swagger(object):
         #     responses[exception.__name__] = not_none(response)
         return responses
 
-    ### Extracts the resource specification from annotations
-    ### Includes method signature of all non-hidden/kwargs-specified HTTP methods
-    ### and adds namespace tags to every method
     def serialize_resource(self, ns, resource, url, kwargs):
+        """Extracts the resource specification from annotations, includes method signature of all
+        non-hidden/kwargs-specified HTTP methods and adds namespace tags to every method
+        """
         doc = self.extract_resource_doc(resource, url)
         if doc is False:
             return
@@ -383,25 +376,11 @@ class Swagger(object):
 
             params.append(param)
 
-        # ### TODO: FUL-3505
-        # # Handle fields mask
-        # mask = doc.get('__mask__')
-        # if (mask and current_app.config['RESTPLUS_MASK_SWAGGER']):
-        #     param = {
-        #         'name': current_app.config['RESTPLUS_MASK_HEADER'],
-        #         'in': 'header',
-        #         'type': 'string',
-        #         'format': 'mask',
-        #         'description': 'An optional fields mask',
-        #     }
-        #     if isinstance(mask, string_types):
-        #         param['default'] = mask
-        #     params.append(param)
 
         return params
 
     def responses_for(self, doc, method):
-        # TODO: simplify/refactor responses/model handling
+
         responses = {}
 
         for d in doc, doc[method]:
@@ -434,14 +413,12 @@ class Swagger(object):
             responses['200'] = DEFAULT_RESPONSE.copy()
         return responses
 
-    ### model-related stuff
     def serialize_definitions(self):
         return dict(
             (name, model.__schema__)
             for name, model in iteritems(self._registered_models)
         )
 
-    ### serialize data type in response
     def serialize_schema(self, model):
         if isinstance(model, (list, tuple)):
             model = model[0]
@@ -469,9 +446,13 @@ class Swagger(object):
 
         raise ValueError('Model {0} not registered'.format(model))
 
-    ### transitively adds all parents and component fields to registered model and returns
-    ### a JSON-schema reference
     def register_model(self, model):
+        """Adds all parents and component fields to registered model and returns
+        a JSON-schema reference
+
+        :param model: model object
+        :return: JSON-schema reference
+        """
         name = model.name if isinstance(model, Model) else model
         if name not in self.api.models:
             raise ValueError('Model {0} not registered'.format(name))
@@ -493,9 +474,9 @@ class Swagger(object):
         elif isinstance(field, fields.List):
             self.register_field(field.container)
 
-    ### security/authenatication documentation ###
-    ### TODO: FUL-3375
     def security_for(self, doc, method):
+        """security/authenatication documentation"""
+
         security = None
         if 'security' in doc:
             auth = doc['security']
@@ -526,6 +507,3 @@ class Swagger(object):
             )
         else:
             return None
-
-
-

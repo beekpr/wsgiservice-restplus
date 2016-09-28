@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 __all__ = (
-    # 'abort',
     'RestError',
     'ValidationError',
     'SpecsError',
@@ -28,5 +26,5 @@ class SpecsError(RestError):
     pass
 
 class SecurityError(RestError):
-    '''Specifies inconsistency in security specificatin .'''
+    '''Specifies inconsistency in security specification.'''
     pass

@@ -26,24 +26,23 @@ class Namespace(object):
     :param bool validate: Whether or not to perform validation on this namespace
     :param Api api: an optional API to attache to the namespace
     '''
+
     def __init__(self, name, description=None, path='/', decorators=None, validate=None, **kwargs):
+
         self.name = name
         self.description = description
         self.path = path.rstrip('/') + '/' if path else ('/' + name + '/')
-
         self._validate = validate
         self.models = {}
-
         self.decorators = decorators if decorators else []
-
         self.resources = []
-
         self.apis = []
+
         if 'api' in kwargs:
             self.apis.append(kwargs['api'])
 
     def add_resource(self, resource, url, **kwargs):
-        '''
+        """
         Register a Resource for a given API Namespace
 
         :param Resource resource: the resource ro register
@@ -63,7 +62,7 @@ class Namespace(object):
             namespace.add_resource(HelloWorld, '/', '/hello')
             namespace.add_resource(Foo, '/foo', endpoint="foo")
             namespace.add_resource(FooSpecial, '/special/foo', endpoint="foo")
-        '''
+        """
         self.resources.append((resource, url, kwargs))
         for api in self.apis:
             api.register_resource(self, resource, url, **kwargs)
@@ -85,8 +84,8 @@ class Namespace(object):
             doc = kwargs.pop('doc', None)
             if doc is not None:
                 self._handle_api_doc(cls, doc)
-            # the following implements the side-effects of the wsgiservice mount decorator
-            if getattr(cls,'_path',None) is None:
+
+            if getattr(cls,'_path', None) is None:
                 cls._path = url
             else:
                 if cls._path != url:
@@ -140,7 +139,6 @@ class Namespace(object):
             api.models[name] = definition
         return definition
 
-    # TODO: FUL-3376 Clean up mask
     def model(self, name=None, model=None, mask=None, **kwargs):
         '''
         Register a model
@@ -224,7 +222,6 @@ class Namespace(object):
                 'responses': {
                     code: (description, [fields]) if as_list else (description, fields)
                 },
-                # '__mask__': kwargs.get('mask', True),  # Mask values can't be determined outside app context
             }
             func.__apidoc__ = merge(getattr(func, '__apidoc__', {}), doc)
             # deleted: marshal_with(fields, **kwargs)(func)
@@ -293,7 +290,7 @@ class Namespace(object):
         return self.doc(deprecated=True)(func)
 
 
-    def security(self,*args):
+    def security(self, *args):
         '''
         Operation security decorator
 

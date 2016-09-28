@@ -12,9 +12,6 @@ from wsgiservice_restplus.errors import SecurityError
 
 from wsgiservice_restplus.wsgiservice_adaptors import get_resource_http_methods
 
-# ### TODO: Would need to be readapted to RE_RULES = re.compile('({.*})')
-# RE_RULES = re.compile('(<.*>)')
-
 # List headers that should never be handled by Flask-RESTPlus
 HEADERS_BLACKLIST = ('Content-Length',)
 
@@ -26,16 +23,7 @@ from wsgiservice import Resource as WSGIResource
 
 class Api(object):
     '''
-    The main entry point for the application.
-    You need to initialize it with a Flask Application: ::
-
-    >>> app = Flask(__name__)
-    >>> api = Api(app)
-
-    Alternatively, you can use :meth:`init_app` to set the Flask application
-    after it has been constructed.
-
-    The endpoint parameter prefix all views and resources:
+    The main entry point for the application. The endpoint parameter prefix all views and resources:
 
         - The API root/documentation will be ``{endpoint}.root``
         - A resource registered as 'resource' will be available as ``{endpoint}.resource``
@@ -72,12 +60,13 @@ class Api(object):
             version='1.0', title=None, description=None,
             terms_url=None, license=None, license_url=None,
             contact=None, contact_url=None, contact_email=None,
-            authorizations=None, security=None, swagger_path='/swagger.json', default_id=default_id, #default='default', default_label='Default namespace',
+            authorizations=None, security=None, swagger_path='/swagger.json', default_id=default_id,
             validate=None,
             tags=None, prefix='',
-            decorators=None, # catch_all_404s=False, serve_challenge_on_401=False, # TODO FUL-3505
+            decorators=None,
             format_checker=None,
-            **kwargs): # TODO: FUL-3376 Delete kwargs
+            **kwargs):
+
         self.version = version
         self.title = title or 'API'
         self.description = description
@@ -92,28 +81,16 @@ class Api(object):
         self.default_id = default_id
         self._validate = validate          # Api-wide request validation setting
         self._swagger_path = swagger_path
-
         self._default_error_handler = None # TODO: FUL-3505
         self.tags = tags or []
-
-        # TODO: FUL-3505
-        # self.error_handlers = {
-        #     ParseError: mask_parse_error_handler,
-        #     MaskError: mask_error_handler,
-        # }
-
         self._schema = None # cache for Swagger JSON specification
         self.models = {}
         self._refresolver = None
         self.format_checker = format_checker
         self.namespaces = []
-
         self.representations = OrderedDict(DEFAULT_REPRESENTATIONS)
-
         self.prefix = prefix
-
         self.decorators = decorators if decorators else []
-
         self.resources = []
 
 
@@ -204,22 +181,6 @@ class Api(object):
         if not self._refresolver:
             self._refresolver = RefResolver.from_schema(self.__schema__)
         return self._refresolver
-
-
-    # TODO: FUL-3376 (Remove if possible)
-    ###  Retrieve URL path for a particular resource ###
-    # To work with absolute URLs would need host name
-    def url_for(self, resource, **values):
-        '''
-        Generates a URL to the given resource.
-        '''
-
-        for resource_class, url, _ in iter(self.resources):
-            if resource == resource_class:
-                return self.base_path + url.lstrip('/')
-        else:
-            return None
-
 
 
 def generate_swagger_resource(api, swagger_path):
