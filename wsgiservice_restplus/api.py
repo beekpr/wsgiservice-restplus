@@ -22,7 +22,7 @@ from wsgiservice import Resource as WSGIResource
 
 
 class Api(object):
-    '''
+    """
     The main entry point for the application. The endpoint parameter prefix all views and resources:
 
         - The API root/documentation will be ``{endpoint}.root``
@@ -54,14 +54,14 @@ class Api(object):
     :param FormatChecker format_checker: A jsonschema.FormatChecker object that is hooked into
     the Model validator. A default or a custom FormatChecker can be provided (e.g., with custom
     checkers), otherwise the default action is to not enforce any format validation.
-    '''
+    """
 
     def __init__(self,
             version='1.0', title=None, description=None,
             terms_url=None, license=None, license_url=None,
             contact=None, contact_url=None, contact_email=None,
-            authorizations=None, security=None, swagger_path='/swagger.json', default_id=default_id,
-            validate=None,
+            authorizations=None, security=None, swagger_path='/swagger.json',
+            default_id=default_id, validate=None,
             tags=None, prefix='',
             decorators=None,
             format_checker=None,
@@ -97,7 +97,6 @@ class Api(object):
     def register_resource(self, namespace, resource, url, **kwargs):
 
         kwargs['endpoint'] = default_endpoint(resource, namespace)
-
         self.resources.append((resource, url, kwargs))
 
 
@@ -155,19 +154,17 @@ class Api(object):
 
     @property
     def base_path(self):
-        '''
-        The base path of the API
+        """The base path of the API
 
         :rtype: str
-        '''
+        """
         return self.prefix
 
     def __schema__(self):
-        '''
-        The Swagger specifications/schema for this API
+        """The Swagger specifications/schema for this API
 
         :returns dict: the schema as a serializable dict
-        '''
+        """
         if not self._schema:
             self._schema = Swagger(self).as_dict()
         return self._schema
@@ -175,23 +172,19 @@ class Api(object):
 
     @property
     def refresolver(self):
-        '''
-        JSON schema model system reference resolver
-        '''
+        """JSON schema model system reference resolver"""
+
         if not self._refresolver:
             self._refresolver = RefResolver.from_schema(self.__schema__)
         return self._refresolver
 
 
 def generate_swagger_resource(api, swagger_path):
-    '''
-    Returns a wsgiservice Swagger documentation Resource class that binds the Api instance
-    '''
+    """Returns a wsgiservice Swagger documentation Resource class that binds the Api instance"""
 
     class SwaggerResource(WSGIResource):
-        '''
-        Resource for the Swagger specification of the bound Api
-        '''
+        """Resource for the Swagger specification of the bound Api"""
+
         _path = swagger_path
 
         def GET(self):
@@ -202,12 +195,11 @@ def generate_swagger_resource(api, swagger_path):
 
 
 def default_endpoint(resource, namespace):
-    '''
-    Provide a default endpoint name for a resource on a given namespace.
+    """Provide a default endpoint name for a resource on a given namespace.
 
     :param Resource resource: the resource modeling the endpoint
     :param Namespace namespace: the namespace holding the resource
     :returns str: An endpoint name
-    '''
+    """
     endpoint = camel_to_dash(resource.__name__)
     return '{ns.name}_{endpoint}'.format(ns=namespace, endpoint=endpoint)

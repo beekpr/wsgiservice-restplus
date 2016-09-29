@@ -27,7 +27,6 @@ def put_document(id,doc_resource_request_post):
     return {'id': id, 'saved': True}
 
 
-
 def token_authentication(request):
     if request.header.get('Authorization', None) and request.header['Authorization'][:5].lower() == 'token':
         return request.header['Authorization'][5:].strip(' ') == 'secret_1234'
