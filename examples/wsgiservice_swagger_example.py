@@ -9,73 +9,79 @@ from wsgiservice import *
 import logging
 import sys
 
-
-import flask_restplus as wsgiservice_restplus
+from wsgiservice_restplus import namespace, fields
+from wsgiservice_restplus.api import Api
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stderr)
 
 
-#TODO: Show more diverse fields (such as email and so on) and make the security work
-# TODO: required/not required...
-
-# Namespace instantiation (sets path prefix and documentation tag/description for all owned (mounted) resources)
-ns = wsgiservice_restplus.namespace.Namespace(
+# Namespace instantiation (sets path prefix and documentation tag/description
+# for all owned (mounted) resources)
+ns = namespace.Namespace(
     name='store_interface',
     description='An associative (key,document) store',
     path='/ns_path/')
 
 
+doc_model = ns.model(
+    'doc_model',
+    {
+        'doc': fields.String(
+            description='The document',
+            example='Some document goes here...')
+    }
+)
 
-# JSON Schema model definitions
-doc_model      = ns.model('doc_model',
-                          {'doc': wsgiservice_restplus.fields.String(
-                                                description='The document',
-                                                example='Some document goes here...')})
+id_model = ns.model(
+    'id_model',
+    {
+        'id': fields.String(
+            pattern=r'[-0-9a-zA-Z]{36}',
+            description='UUID of key-document pair',
+            example='3c805c7c-9ff0-4879-8eb7-d2eee97ca39d')
+    }
+)
 
-id_model = ns.model('id_model',
-                          { 'id': wsgiservice_restplus.fields.String(
-                                                pattern=r'[-0-9a-zA-Z]{36}',
-                                                description='UUID of key-document pair',
-                                                example='3c805c7c-9ff0-4879-8eb7-d2eee97ca39d') } )
+id_doc_model = ns.clone('id_doc_model', id_model,doc_model)
 
-id_doc_model    = ns.clone('id_doc_model',id_model,doc_model)
 
-# model inheritance
-id_saved_model = ns.inherit('id_saved_model',
-                            id_model,
-                            {'saved': wsgiservice_restplus.fields.Boolean(
-                                                description='Storage status',
-                                                example='True')})
+id_saved_model = ns.inherit(
+    'id_saved_model',
+    id_model,
+    {
+        'saved': fields.Boolean(
+            description='Storage status',
+            example='True')
+    }
+)
 
-error_model    = ns.model('error',
-                          { 'error': wsgiservice_restplus.fields.String(
-                                                description='Description of the error',
-                                                example='The error was ...') } )
-
+error_model = ns.model(
+    'error',
+    {
+        'error': fields.String(
+            description='Description of the error',
+            example='The error was ...')
+    }
+)
 
 # The non-persistent document data store
 data = {}
 
-
 def update_document(id,doc_resource_request_post):
-    """
-    Overwrite or create the document indicated by the ID.
-
+    """Overwrite or create the document indicated by the ID.
     Parameters are passed as key/value pairs in the POST data.
     """
+
     data.setdefault(id, {'id': id})
     for key in doc_resource_request_post:
         data[id][key] = doc_resource_request_post[key]
+
     return {'id': id, 'saved': True}
 
 
-# @validate('id', re=r'[-0-9a-zA-Z]{36}', doc='User ID, must be a valid UUID.')  # TODO: replace by request parser or model
-
+@validate('id', re=r'[-0-9a-zA-Z]{36}', doc='User ID, must be a valid UUID.')
 @ns.route('/{id}')
-@ns.param(name='id', description='User ID, must be a valid UUID.')#, model=wsgiservice_restplus.fields.String(
-                                                 # pattern=r'[-0-9a-zA-Z]{36}',
-                                                 # description='UUID of key-document pair',
-                                                 # example='3c805c7c-9ff0-4879-8eb7-d2eee97ca39d') )  # path parameter documentation
+@ns.param(name='id', description='User ID, must be a valid UUID.')
 class Document(Resource):
     """
     Represents an individual document in the document store.
@@ -88,23 +94,12 @@ class Document(Resource):
     @ns.response(code=200,description='Returned requested document',model=id_doc_model)
     @ns.response(code=404, description='Not found', model=error_model)
     def GET(self, id):
-        "Return the document indicated by the ID."
+        """Return the document indicated by the ID."""
         return data[id]
-
-    # TODO: Remove
-    # # parameter model
-    # # @expect(doc_model)
-    # # TODO: extract into separate function in order not to perform request validation twice
-    # @ns.param(name='doc', description='Document replacing old document.', _in='formData')
-    # @ns.marshal_with(id_saved_model,code=200, description='Document updated')
-    # def PUT(self, id):
-    #     """Overwrite or create the document indicated by the ID. Parameters
-    #     are passed as key/value pairs in the POST data."""
-    #     return update_document(id,self.request.POST)
 
     @ns.response(code=200,description='Deleted specified document')
     def DELETE(self, id):
-        "Delete the document indicated by the ID."
+        """Delete the document indicated by the ID."""
         del data[id]
 
 
@@ -140,7 +135,7 @@ class Documents(Resource):
 
 ### Api instance construction ###
 
-api = wsgiservice_restplus.api.Api(
+api = Api(
     version='1.0', title='Document store REST API', description='This API provides access to a simple in-memory document store',
     terms_url=None, license=None, license_url=None,
     contact='Maintainer name', contact_url='beekeeper.io', contact_email='maintainer@beekeeper.io',

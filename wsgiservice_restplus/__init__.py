@@ -14,6 +14,7 @@ __all__ = (
     'Model',
     'fields',
     'inputs',
+    'namespace',
     'RestError',
     'SpecsError',
     'Swagger',
