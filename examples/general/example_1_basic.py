@@ -10,15 +10,15 @@ import uuid
 
 from wsgiservice import *
 
-import wsgiservice_restplus
+from wsgiservice_restplus.api import Api
+from wsgiservice_restplus import namespace, fields
 from exampleslib.utils import data, update_document
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stderr)
 
 
-
 # Api instance
-api = wsgiservice_restplus.api.Api(
+api = Api(
     version='1.0',
     title='Document store REST API',
     description='This API provides access to a simple in-memory document store',
@@ -34,7 +34,7 @@ api = wsgiservice_restplus.api.Api(
 )
 
 # Namespace instance:
-ns = wsgiservice_restplus.namespace.Namespace(
+ns = namespace.Namespace(
     name='document_collection_ns',
     description='An associative (key,document) store',
     path='/ns_sub_path/')
@@ -46,7 +46,7 @@ ns = wsgiservice_restplus.namespace.Namespace(
 doc_model = ns.model(
     'doc_model',
     {
-        'doc': wsgiservice_restplus.fields.String(
+        'doc': fields.String(
             description='The document',
             example='Some document goes here...')
     }
@@ -55,7 +55,7 @@ doc_model = ns.model(
 id_model = ns.model(
     'id_model',
     {
-        'id': wsgiservice_restplus.fields.String(
+        'id': fields.String(
             pattern=r'[-0-9a-zA-Z]{36}',
             description='UUID of the document',
             example='3c805c7c-9ff0-4879-8eb7-d2eee97ca39d')
@@ -74,7 +74,7 @@ id_saved_model = ns.inherit(
     'id_saved_model',
     id_model,
     {
-        'saved': wsgiservice_restplus.fields.Boolean(
+        'saved': fields.Boolean(
             description='Storage status',
             example='True')
     }
@@ -83,7 +83,7 @@ id_saved_model = ns.inherit(
 error_model = ns.model(
     'error',
     {
-        'error': wsgiservice_restplus.fields.String(
+        'error': fields.String(
             description='Description of the error',
             example='The error was ...')
     }
@@ -105,12 +105,12 @@ class Document(Resource):
     @ns.response(code=200, description='Returned requested document', model=id_doc_model)
     @ns.response(code=404, description='Not found', model=error_model)
     def GET(self, id):
-        "Return the document indicated by the ID."
+        """Return the document indicated by the ID."""
         return data[id]
 
     @ns.response(code=200, description='Deleted specified document')
     def DELETE(self, id):
-        "Delete the document indicated by the ID."
+        """Delete the document indicated by the ID."""
         del data[id]
 
 
@@ -127,7 +127,6 @@ class Documents(Resource):
         id = str(uuid.uuid4())
         self.response.body_raw = update_document(id,self.request.POST)
         raise_201(self, id)
-
 
 
 # Add namespace to Api

@@ -10,7 +10,8 @@ import uuid
 from wsgiservice import *
 
 from exampleslib.utils import data, put_document
-from wsgiservice_restplus import namespace, api, fields
+from wsgiservice_restplus import namespace, fields
+from wsgiservice_restplus.api import Api
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stderr)
 
@@ -55,57 +56,6 @@ id_saved_model = ns.clone(
 )
 
 
-
-#----------------------
-#      ENDPOINTS
-#----------------------
-
-@ns.route('/{id}')
-@ns.param(name='id', description='User ID, must be a valid UUID.')
-@validate('id', re=r'[-0-9a-zA-Z]{36}', doc='User ID, must be a valid UUID.')
-class Document(Resource):
-    """Represents an individual document in the document store. The storage
-    is only persistent in-memory, so it will go away when the service is
-    restarted.
-    """
-    NOT_FOUND = (KeyError,)
-
-    @ns.expect(id)
-    @ns.security('basic_auth','api_key')
-    @ns.response(code=200,description='Returned requested document',model=None)
-    def GET(self, id):
-        """Returns the document indicated by the ID."""
-        return data[id]
-
-    @ns.expect(doc_model)
-    @ns.param(name='doc', description='Document replacing old document.', _in='formData')
-    @ns.marshal_with(id_saved_model,code=200, description='Document updated')
-    @ns.security('basic_auth')
-    def PUT(self, id):
-        """Overwrite or create the document indicated by the ID. Parameters
-        are passed as key/value pairs in the POST data."""
-        return put_document(id,self.request.POST)
-
-    def DELETE(self, id):
-        """Delete the document indicated by the ID."""
-        del data[id]
-
-
-@ns.route('/')
-class Documents(Resource):
-
-    @ns.expect(doc_model)
-    @ns.deprecated
-    @ns.param(name='doc', description='Document to post.', _in='formData')
-    @ns.response(code=201, description='Document posted', model=id_saved_model)
-    def POST(self):
-        """Create a new document, assigning a unique ID. Parameters are
-                passed in as key/value pairs in the POST data."""
-        id = str(uuid.uuid4())
-        self.response.body_raw = put_document(id,self.request.POST)
-        raise_201(self, id)
-
-
 # ----------------------
 #   GLOBAL SETTINGS
 # ----------------------
@@ -131,7 +81,7 @@ api_wide_security = ('api_token', 'basic_auth')
 # Note: the URL prefix for mounting the wsgiservice.Application instance to the URLMap must be
 # retrieved from the Api instance via Api.base_path() in order to enforce consistency between
 # application and documentation
-api = api.Api(
+api = Api(
     version='1',
     contact_url=None,
     contact_email=None,
@@ -151,6 +101,60 @@ api = api.Api(
     decorators=None,
     format_checker=None
 )
+
+
+#----------------------
+#      ENDPOINTS
+#----------------------
+
+@ns.route('/{id}')
+@ns.param(name='id', description='User ID, must be a valid UUID.')
+@validate('id', re=r'[-0-9a-zA-Z]{36}', doc='User ID, must be a valid UUID.')
+class Document(Resource):
+    """Represents an individual document in the document store. The storage
+    is only persistent in-memory, so it will go away when the service is restarted.
+    """
+    NOT_FOUND = (KeyError,)
+
+    @ns.expect(id)
+    @ns.security('basic_auth','api_key')
+    @ns.response(code=200, description='Returned requested document', model=None)
+    def GET(self, id):
+        """Returns the document indicated by the ID."""
+        return data[id]
+
+    @ns.expect(doc_model)
+    @ns.param(name='doc', description='Document replacing old document.', _in='formData')
+    @ns.marshal_with(id_saved_model, code=200, description='Document updated')
+    @ns.security('basic_auth')
+    def PUT(self, id):
+        """Overwrite or create the document indicated by the ID. Parameters
+        are passed as key/value pairs in the POST data."""
+        return put_document(id, self.request.POST)
+
+    def DELETE(self, id):
+        """Delete the document indicated by the ID."""
+        del data[id]
+
+
+@ns.route('/')
+class Documents(Resource):
+
+    @ns.expect(doc_model)
+    @ns.deprecated
+    @ns.param(name='doc', description='Document to post.', _in='formData')
+    @ns.response(code=201, description='Document posted', model=id_saved_model)
+    def POST(self):
+        """Create a new document, assigning a unique ID. Parameters are
+        passed in as key/value pairs in the POST data."""
+
+        id = str(uuid.uuid4())
+        self.response.body_raw = put_document(id, self.request.POST)
+        raise_201(self, id)
+
+
+
+# ---- SETUP ----
 
 
 api.add_namespace(ns)

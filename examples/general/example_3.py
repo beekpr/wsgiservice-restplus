@@ -16,7 +16,9 @@ from wsgiservice_restplus.api import Api
 logging.basicConfig(level=logging.DEBUG, stream=sys.stderr)
 
 
-
+# -----------------
+#    API SETUP
+# -----------------
 
 api = Api(
     version='1.0',
@@ -40,12 +42,16 @@ api = Api(
 )
 
 
-# Namespace:
+# --- NAMESPACE: ---
+
 ns = namespace.Namespace(
     name='store_interface',
     description='An associative (key,document) store',
     path='/ns_path/')
 
+
+
+# --- MODELS: ---
 
 doc_model = ns.model(
     'doc_model',
@@ -89,7 +95,6 @@ error_model = ns.model(
 )
 
 
-
 # -----------------
 #    ENDPOINTS
 # -----------------
@@ -98,11 +103,8 @@ error_model = ns.model(
 @ns.route('/{id}')
 @ns.param(name='id', description='User ID, must be a valid UUID.')
 class Document(Resource):
-    """
-    Represents an individual document in the document store.
-
-    The storage is only persistent in-memory, so it will go away when the service is
-    restarted.
+    """Represents an individual document in the document store. The storage is only persistent in-memory,
+    so it will go away when the service is restarted.
     """
     NOT_FOUND = (KeyError,)
 
