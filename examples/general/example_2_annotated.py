@@ -9,14 +9,13 @@ import uuid
 
 from wsgiservice import *
 
+from exampleslib.utils import data, put_document
 from wsgiservice_restplus import namespace, api, fields
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stderr)
 
-data = {}
-
 # ----------------------
-#       NAMESPACE:
+#       API SETUP:
 # ----------------------
 
 ns = namespace.Namespace(
@@ -54,15 +53,6 @@ id_saved_model = ns.clone(
             example='True')
     }
 )
-
-
-def put_document(id,doc_resource_request_post):
-    """Overwrite or create the document indicated by the ID. Parameters
-    are passed as key/value pairs in the POST data."""
-    data.setdefault(id, {'id': id})
-    for key in doc_resource_request_post:
-        data[id][key] = doc_resource_request_post[key]
-    return {'id': id, 'saved': True}
 
 
 
