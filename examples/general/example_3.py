@@ -16,33 +16,13 @@ from wsgiservice_restplus.api import Api
 logging.basicConfig(level=logging.DEBUG, stream=sys.stderr)
 
 
-# -----------------
-#    API SETUP
-# -----------------
 
-api = Api(
-    version='1.0',
-    title='Document store REST API',
-    description='This API provides access to a simple in-memory document store',
-    contact='Maintainer name',
-    contact_url='beekeeper.io',
-    contact_email='maintainer@beekeeper.io',
-    default='default',
-    default_label='Default namespace',
-    prefix='/documents/',
-    default_mediatype='application/json',
-    doc='/',
-    security=None,
-    tags=None,
-    validate=None,
-    terms_url=None,
-    license=None,
-    license_url=None,
-    authorizations=None
-)
+# --------------------
+# NAMESPACE & MODELs:
+# --------------------
 
 
-# --- NAMESPACE: ---
+# ---- NAMESPACE ----
 
 ns = namespace.Namespace(
     name='store_interface',
@@ -51,7 +31,7 @@ ns = namespace.Namespace(
 
 
 
-# --- MODELS: ---
+# ---- MODELS ----
 
 doc_model = ns.model(
     'doc_model',
@@ -72,7 +52,7 @@ id_model = ns.model(
     }
 )
 
-id_doc_model = ns.clone('id_doc_model', id_model,doc_model)
+id_doc_model = ns.clone('id_doc_model', id_model, doc_model)
 
 
 id_saved_model = ns.inherit(
@@ -123,7 +103,6 @@ class Document(Resource):
 @ns.route('/')
 class Documents(Resource):
 
-    @ns.security('api_token')
     @ns.expect(doc_model)
     @ns.param(name='doc', description='Document to post.', _in='formData')    # could be replaced by @ns.expect()
     @ns.response(code=201, description='Document posted', model=id_saved_model)
@@ -143,16 +122,38 @@ class Documents(Resource):
         raise_201(self, id)
 
 
+
+# -----------------
+#    API SETUP
+# -----------------
+
+api = Api(
+    version='1.0',
+    title='Document store REST API',
+    description='This API provides access to a simple in-memory document store',
+    contact='Maintainer name',
+    contact_url='beekeeper.io',
+    contact_email='maintainer@beekeeper.io',
+    default='default',
+    default_label='Default namespace',
+    prefix='/documents/',
+    default_mediatype='application/json',
+    doc='/',
+    security=None,
+    tags=None,
+    validate=None,
+    terms_url=None,
+    license=None,
+    license_url=None,
+    authorizations=None
+)
+
+
 # Add the namespace to the api object:
 api.add_namespace(ns)
 
-# Add the resources to globals:
-global_variables = globals()
-resources = api.get_resources()
-global_variables.update(resources)
-
-# Create a wsgiservice application isntance from globals:
-app = get_app(global_variables, add_help=False)
+# Create a wsgiservice application isntance :
+app = api.create_wsgiservice_app()
 
 
 if __name__ == '__main__':

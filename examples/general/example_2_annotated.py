@@ -25,7 +25,6 @@ ns = namespace.Namespace(
     path='/',
 )
 
-
 id_model = ns.model(
     'id',
     {
@@ -56,8 +55,61 @@ id_saved_model = ns.clone(
 )
 
 
+#----------------------
+#      ENDPOINTS
+#----------------------
+
+@ns.route('/{id}')
+@ns.param(name='id', description='User ID, must be a valid UUID.')
+@validate('id', re=r'[-0-9a-zA-Z]{36}', doc='User ID, must be a valid UUID.')
+class Document(Resource):
+    """Represents an individual document in the document store. The storage
+    is only persistent in-memory, so it will go away when the service is restarted.
+    """
+    NOT_FOUND = (KeyError,)
+
+    @ns.expect(id)
+    @ns.response(code=200, description='Returned requested document', model=None)
+    def GET(self, id):
+        """Returns the document indicated by the ID."""
+        return data[id]
+
+    @ns.expect(doc_model)
+    @ns.param(name='doc', description='Document replacing old document.', _in='query')
+    @ns.marshal_with(id_saved_model, code=200, description='Document updated')
+    def PUT(self, id):
+        """Overwrite or create the document indicated by the ID. Parameters
+        are passed as key/value pairs in the POST data."""
+        return put_document(id, self.request.POST)
+
+    def DELETE(self, id):
+        """Delete the document indicated by the ID."""
+        del data[id]
+
+
+@ns.route('/')
+class Documents(Resource):
+
+    def GET(self):
+        return "<h2>This is a successful test!</h2>"
+
+    @ns.expect(doc_model)
+    @ns.deprecated
+    @ns.param(name='doc', description='Document to post.', _in='query')
+    @ns.response(code=201, description='Document posted', model=id_saved_model)
+    def POST(self):
+        """Create a new document, assigning a unique ID. Parameters are
+        passed in as key/value pairs in the POST data."""
+
+        id = str(uuid.uuid4())
+        self.response.body_raw = put_document(id, self.request.POST)
+        raise_201(self, id)
+
+
+
+
 # ----------------------
-#   GLOBAL SETTINGS
+#     API SETTINGS
 # ----------------------
 
 #Swagger Security Scheme:
@@ -103,71 +155,10 @@ api = Api(
 )
 
 
-#----------------------
-#      ENDPOINTS
-#----------------------
-
-@ns.route('/{id}')
-@ns.param(name='id', description='User ID, must be a valid UUID.')
-@validate('id', re=r'[-0-9a-zA-Z]{36}', doc='User ID, must be a valid UUID.')
-class Document(Resource):
-    """Represents an individual document in the document store. The storage
-    is only persistent in-memory, so it will go away when the service is restarted.
-    """
-    NOT_FOUND = (KeyError,)
-
-    @ns.expect(id)
-    @ns.response(code=200, description='Returned requested document', model=None)
-    def GET(self, id):
-        """Returns the document indicated by the ID."""
-        return data[id]
-
-    @ns.expect(doc_model)
-    @ns.param(name='doc', description='Document replacing old document.', _in='formData')
-    @ns.marshal_with(id_saved_model, code=200, description='Document updated')
-    def PUT(self, id):
-        """Overwrite or create the document indicated by the ID. Parameters
-        are passed as key/value pairs in the POST data."""
-        return put_document(id, self.request.POST)
-
-    def DELETE(self, id):
-        """Delete the document indicated by the ID."""
-        del data[id]
-
-
-@ns.route('/')
-class Documents(Resource):
-
-    def GET(self):
-        return "<h2>This is a successful test!</h2>"
-
-    @ns.expect(doc_model)
-    @ns.deprecated
-    @ns.param(name='doc', description='Document to post.', _in='formData')
-    @ns.response(code=201, description='Document posted', model=id_saved_model)
-    def POST(self):
-        """Create a new document, assigning a unique ID. Parameters are
-        passed in as key/value pairs in the POST data."""
-
-        id = str(uuid.uuid4())
-        self.response.body_raw = put_document(id, self.request.POST)
-        raise_201(self, id)
-
-
-
-# ---- SETUP ----
-
-
 api.add_namespace(ns)
 
-# Add the resources to globals:
-global_variables = globals()
-resources = api.get_resources()
-global_variables.update(resources)
-
-# Create a wsgiservice application isntance from globals:
-app = get_app(global_variables, add_help=False)
-
+# Create a wsgiservice application instance :
+app = api.create_wsgiservice_app()
 
 if __name__ == '__main__':
     from wsgiref.simple_server import make_server

@@ -50,11 +50,7 @@ class Namespace(object):
         :param list|tuple resource_class_args: args to be forwarded to the constructor of the resource.
         :param dict resource_class_kwargs: kwargs to be forwarded to the constructor of the resource.
 
-        Additional keyword arguments not specified above will be passed as-is
-        to :meth:`flask.Flask.add_url_rule`.
-
         Examples::
-
             namespace.add_resource(HelloWorld, '/', '/hello')
             namespace.add_resource(Foo, '/foo', endpoint="foo")
             namespace.add_resource(FooSpecial, '/special/foo', endpoint="foo")
@@ -178,7 +174,6 @@ class Namespace(object):
         model = Model.inherit(name, *specs)
         return self.add_model(name, model)
 
-
     def expect(self, *inputs, **kwargs):
         """
         A decorator to Specify the expected input model
@@ -205,7 +200,8 @@ class Namespace(object):
 
     def marshal_with(self, fields, as_list=False, code=200, description=None, **kwargs):
         """
-        A decorator specifying the fields to use for serialization.
+        A decorator to specify the returned response object values: attaches __apidoc__ attribute
+        to the decorated class or method.
 
         :param bool as_list: Indicate that the return type is a list (for the documentation)
         :param int code: Optionally give the expected HTTP response code if its different from 200
@@ -218,8 +214,8 @@ class Namespace(object):
                 },
             }
             func.__apidoc__ = merge(getattr(func, '__apidoc__', {}), doc)
-            # deleted: marshal_with(fields, **kwargs)(func)
             return func
+
         return wrapper
 
 
@@ -247,8 +243,8 @@ class Namespace(object):
         A decorator to specify one of the expected parameters
 
         :param str name: the parameter name
-        :param str description: a small description
-        :param str _in: the parameter location `(query|header|formData|body|cookie)`
+        :param str description: a small description of the parameter
+        :param str _in: the parameter location `(query|header|formData|body|cookie)`, by default set to `query`
         """
         param = kwargs
         param['in'] = _in

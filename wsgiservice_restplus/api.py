@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import wsgiservice
 from jsonschema import RefResolver, FormatChecker
 
 from wsgiservice_restplus._compat import OrderedDict
@@ -81,7 +82,7 @@ class Api(object):
         self.default_id = default_id
         self._validate = validate          # Api-wide request validation setting
         self._swagger_path = swagger_path
-        self._default_error_handler = None # TODO: FUL-3505
+        self._default_error_handler = None
         self.tags = tags or []
         self._schema = None # cache for Swagger JSON specification
         self.models = {}
@@ -93,7 +94,6 @@ class Api(object):
         self.decorators = decorators if decorators else []
         self.resources = []
 
-
     def register_resource(self, namespace, resource, url, **kwargs):
 
         kwargs['endpoint'] = default_endpoint(resource, namespace)
@@ -101,6 +101,11 @@ class Api(object):
 
 
     def add_namespace(self, ns):
+        """Adds a namespace to the api.namespaces list, adds the namespace models to its owm self.models list
+        and registers the namespace resources; also adds itself to the the namespace.apis list.
+
+        :param ns: Namespace obj
+        """
 
         # Check whether namespace security requirements are contained in API security definitions
         if not self._security_requirements_in_authorizations(ns):
@@ -136,7 +141,7 @@ class Api(object):
 
 
     def get_resources(self):
-        """Get resources held by this instance, then create and add SwaggerResourceClass as well
+        """Returns resources held by this instance, then creates and add SwaggerResourceClass as well
         (holds swagger.json)"""
 
         SwaggerResourceClass = generate_swagger_resource(api=self, swagger_path=self._swagger_path)
@@ -150,6 +155,26 @@ class Api(object):
         resources_dict[SwaggerResourceClass.__name__] = SwaggerResourceClass
 
         return resources_dict
+
+
+    def create_wsgiservice_app(self):
+        """Creates a :class:`wsgiservice.application.Application` instance from the resources \
+        owned by self (the namespaces of this Api instance)
+        """
+
+        SwaggerResourceClass = generate_swagger_resource(api=self, swagger_path=self._swagger_path)
+        self.resources.append((SwaggerResourceClass, self._swagger_path, {}))
+
+        # Check for resource._path == url (Api.prefix ignored)
+        # Note that we do not use the base_path here as it's assumed to be merged in elsewhere
+        for resource, url, _ in self.resources:
+            if getattr(resource, '_path', None) is not None:
+                if resource._path != url:
+                    raise Exception  # raise a path error exception due to inconsistent mount point
+
+        return wsgiservice.get_app(
+            {resource.__name__: resource for resource, _, _ in self.resources}
+        )
 
 
     @property
@@ -188,7 +213,7 @@ def generate_swagger_resource(api, swagger_path):
         _path = swagger_path
 
         def GET(self):
-            self.type = 'application/json'
+            self.type = str('application/json')
             return api.__schema__()
 
     return SwaggerResource

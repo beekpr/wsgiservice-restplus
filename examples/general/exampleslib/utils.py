@@ -1,9 +1,8 @@
-
 # The non-persistent document data store
 data = {}
 
 
-def update_document(id,doc_resource_request_post):
+def update_document(id, doc_resource_request_post):
     """Overwrite or create the document indicated by the ID.
     Parameters are passed as key/value pairs in the POST data.
     """
@@ -15,8 +14,7 @@ def update_document(id,doc_resource_request_post):
     return {'id': id, 'saved': True}
 
 
-
-def put_document(id,doc_resource_request_post):
+def put_document(id, doc_resource_request_post):
     """Overwrite or create the document indicated by the ID. Parameters
     are passed as key/value pairs in the POST data."""
 
@@ -32,4 +30,3 @@ def token_authentication(request):
         return request.header['Authorization'][5:].strip(' ') == 'secret_1234'
     else:
         return False
-
