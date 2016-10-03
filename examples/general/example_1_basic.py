@@ -121,7 +121,7 @@ class Documents(Resource):
     def GET(self):
         return "<h2>This is a TEST page.</h2>"
 
-    @ns.param(name='doc',description='Document to post.',_in='formData') # @ns.expect(doc_model)
+    @ns.param(name='doc', description='Document to post.', _in='formData')
     @ns.response(code=201, description='Document posted', model=id_saved_model)
     def POST(self):
         """Create a new document, assigning a unique ID.
