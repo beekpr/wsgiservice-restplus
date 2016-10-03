@@ -1,8 +1,11 @@
-from wsgiservice_restplus import Namespace, Resource, fields
+from wsgiservice import Resource, raise_404
 
-api = Namespace('cats', description='Cats related operations')
+from wsgiservice_restplus import fields
+from wsgiservice_restplus.namespace import Namespace
 
-cat = api.model('Cat', {
+ns = Namespace('cats', description='Cats related operations')
+
+cat_model = ns.model('Cat', {
     'id': fields.String(required=True, description='The cat identifier'),
     'name': fields.String(required=True, description='The cat name'),
 })
@@ -12,24 +15,26 @@ CATS = [
 ]
 
 
-@api.route('/')
+@ns.route('/')
 class CatList(Resource):
-    @api.doc('list_cats')
-    @api.marshal_list_with(cat)
-    def get(self):
+
+    @ns.doc('list_cats')
+    @ns.marshal_list_with(cat_model)
+    def GET(self):
         '''List all cats'''
         return CATS
 
 
-@api.route('/<id>')
-@api.param('id', 'The cat identifier')
-@api.response(404, 'Cat not found')
+@ns.route('/<id>')
+@ns.param('id', 'The cat identifier')
+@ns.response(404, 'Cat not found')
 class Cat(Resource):
-    @api.doc('get_cat')
-    @api.marshal_with(cat)
-    def get(self, id):
+
+    @ns.doc('get_cat')
+    @ns.marshal_with(cat_model)
+    def GET(self, id):
         '''Fetch a cat given its identifier'''
         for cat in CATS:
             if cat['id'] == id:
                 return cat
-        api.abort(404)
+        raise_404

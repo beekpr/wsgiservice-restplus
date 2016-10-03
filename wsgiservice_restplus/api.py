@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import wsgiservice
 from jsonschema import RefResolver, FormatChecker
 
 from wsgiservice_restplus._compat import OrderedDict
@@ -22,7 +23,7 @@ from wsgiservice import Resource as WSGIResource
 
 
 class Api(object):
-    '''
+    """
     The main entry point for the application. The endpoint parameter prefix all views and resources:
 
         - The API root/documentation will be ``{endpoint}.root``
@@ -54,14 +55,14 @@ class Api(object):
     :param FormatChecker format_checker: A jsonschema.FormatChecker object that is hooked into
     the Model validator. A default or a custom FormatChecker can be provided (e.g., with custom
     checkers), otherwise the default action is to not enforce any format validation.
-    '''
+    """
 
     def __init__(self,
             version='1.0', title=None, description=None,
             terms_url=None, license=None, license_url=None,
             contact=None, contact_url=None, contact_email=None,
-            authorizations=None, security=None, swagger_path='/swagger.json', default_id=default_id,
-            validate=None,
+            authorizations=None, security=None, swagger_path='/swagger.json',
+            default_id=default_id, validate=None,
             tags=None, prefix='',
             decorators=None,
             format_checker=None,
@@ -81,7 +82,7 @@ class Api(object):
         self.default_id = default_id
         self._validate = validate          # Api-wide request validation setting
         self._swagger_path = swagger_path
-        self._default_error_handler = None # TODO: FUL-3505
+        self._default_error_handler = None
         self.tags = tags or []
         self._schema = None # cache for Swagger JSON specification
         self.models = {}
@@ -93,15 +94,18 @@ class Api(object):
         self.decorators = decorators if decorators else []
         self.resources = []
 
-
     def register_resource(self, namespace, resource, url, **kwargs):
 
         kwargs['endpoint'] = default_endpoint(resource, namespace)
-
         self.resources.append((resource, url, kwargs))
 
 
     def add_namespace(self, ns):
+        """Adds a namespace to the api.namespaces list, adds the namespace models to its owm self.models list
+        and registers the namespace resources; also adds itself to the the namespace.apis list.
+
+        :param ns: Namespace obj
+        """
 
         # Check whether namespace security requirements are contained in API security definitions
         if not self._security_requirements_in_authorizations(ns):
@@ -137,7 +141,7 @@ class Api(object):
 
 
     def get_resources(self):
-        """Get resources held by this instance, then create and add SwaggerResourceClass as well
+        """Returns resources held by this instance, then creates and add SwaggerResourceClass as well
         (holds swagger.json)"""
 
         SwaggerResourceClass = generate_swagger_resource(api=self, swagger_path=self._swagger_path)
@@ -153,21 +157,39 @@ class Api(object):
         return resources_dict
 
 
+    def create_wsgiservice_app(self):
+        """Creates a :class:`wsgiservice.application.Application` instance from the resources \
+        owned by self (the namespaces of this Api instance)
+        """
+
+        SwaggerResourceClass = generate_swagger_resource(api=self, swagger_path=self._swagger_path)
+        self.resources.append((SwaggerResourceClass, self._swagger_path, {}))
+
+        # Check for resource._path == url (Api.prefix ignored)
+        # Note that we do not use the base_path here as it's assumed to be merged in elsewhere
+        for resource, url, _ in self.resources:
+            if getattr(resource, '_path', None) is not None:
+                if resource._path != url:
+                    raise Exception  # raise a path error exception due to inconsistent mount point
+
+        return wsgiservice.get_app(
+            {resource.__name__: resource for resource, _, _ in self.resources}
+        )
+
+
     @property
     def base_path(self):
-        '''
-        The base path of the API
+        """The base path of the API
 
         :rtype: str
-        '''
+        """
         return self.prefix
 
     def __schema__(self):
-        '''
-        The Swagger specifications/schema for this API
+        """The Swagger specifications/schema for this API
 
         :returns dict: the schema as a serializable dict
-        '''
+        """
         if not self._schema:
             self._schema = Swagger(self).as_dict()
         return self._schema
@@ -175,39 +197,34 @@ class Api(object):
 
     @property
     def refresolver(self):
-        '''
-        JSON schema model system reference resolver
-        '''
+        """JSON schema model system reference resolver"""
+
         if not self._refresolver:
             self._refresolver = RefResolver.from_schema(self.__schema__)
         return self._refresolver
 
 
 def generate_swagger_resource(api, swagger_path):
-    '''
-    Returns a wsgiservice Swagger documentation Resource class that binds the Api instance
-    '''
+    """Returns a wsgiservice Swagger documentation Resource class that binds the Api instance"""
 
     class SwaggerResource(WSGIResource):
-        '''
-        Resource for the Swagger specification of the bound Api
-        '''
+        """Resource for the Swagger specification of the bound Api"""
+
         _path = swagger_path
 
         def GET(self):
-            self.type = 'application/json'
+            self.type = str('application/json')
             return api.__schema__()
 
     return SwaggerResource
 
 
 def default_endpoint(resource, namespace):
-    '''
-    Provide a default endpoint name for a resource on a given namespace.
+    """Provide a default endpoint name for a resource on a given namespace.
 
     :param Resource resource: the resource modeling the endpoint
     :param Namespace namespace: the namespace holding the resource
     :returns str: An endpoint name
-    '''
+    """
     endpoint = camel_to_dash(resource.__name__)
     return '{ns.name}_{endpoint}'.format(ns=namespace, endpoint=endpoint)

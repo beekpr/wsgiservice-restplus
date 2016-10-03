@@ -62,3 +62,4 @@ wsgiservice_restplus/static/bower
 # PyCharm project setup files:
 .idea/*
 .project
+/examples/env/

@@ -13,11 +13,8 @@ from wsgiservice_adaptors import get_resource_http_methods
 
 
 class Namespace(object):
-
-    '''
-    Group resources together.
-
-    Namespace is to API what :class:`flask:flask.Blueprint` is for :class:`flask:flask.Flask`.
+    """Groups resources together.Namespace is to API what :class:`flask:flask.Blueprint`
+    is for :class:`flask:flask.Flask`.
 
     :param str name: The namespace name
     :param str description: An optionale short description
@@ -25,7 +22,7 @@ class Namespace(object):
     :param list decorators: A list of decorators to apply to each resources
     :param bool validate: Whether or not to perform validation on this namespace
     :param Api api: an optional API to attache to the namespace
-    '''
+    """
 
     def __init__(self, name, description=None, path='/', decorators=None, validate=None, **kwargs):
 
@@ -46,19 +43,14 @@ class Namespace(object):
         Register a Resource for a given API Namespace
 
         :param Resource resource: the resource ro register
-        :param str urls: one or more url routes to match for the resource,
-                         standard flask routing rules apply.
-                         Any url variables will be passed to the resource method as args.
-        :param str endpoint: endpoint name (defaults to :meth:`Resource.__name__.lower`
-            Can be used to reference this route in :class:`fields.Url` fields
+        :param str urls: one or more url routes to match for the resource,standard flask routing rules apply.\
+        Any url variables will be passed to the resource method as args.
+        :param str endpoint: endpoint name (defaults to :meth:`Resource.__name__.lower`. Can be used to \
+        reference this route in :class:`fields.Url` fields
         :param list|tuple resource_class_args: args to be forwarded to the constructor of the resource.
         :param dict resource_class_kwargs: kwargs to be forwarded to the constructor of the resource.
 
-        Additional keyword arguments not specified above will be passed as-is
-        to :meth:`flask.Flask.add_url_rule`.
-
         Examples::
-
             namespace.add_resource(HelloWorld, '/', '/hello')
             namespace.add_resource(Foo, '/foo', endpoint="foo")
             namespace.add_resource(FooSpecial, '/special/foo', endpoint="foo")
@@ -68,9 +60,7 @@ class Namespace(object):
             api.register_resource(self, resource, url, **kwargs)
 
     def route(self, url, **kwargs):
-        '''
-        A decorator to route resources.
-        '''
+        """ A decorator to route resources. """
         if url[0] != '/':
             raise ValueError
         if len(url) > 1:
@@ -129,7 +119,7 @@ class Namespace(object):
 
 
     def hide(self, func):
-        '''A decorator to hide a resource or a method from specifications'''
+        """A decorator to hide a resource or a method from specifications"""
         return self.doc(False)(func)
 
 
@@ -140,21 +130,21 @@ class Namespace(object):
         return definition
 
     def model(self, name=None, model=None, mask=None, **kwargs):
-        '''
+        """
         Register a model
 
         .. seealso:: :class:`Model`
-        '''
+        """
         model = Model(name, model, mask=mask)
         model.__apidoc__.update(kwargs)
         return self.add_model(name, model)
 
     def extend(self, name, parent, fields):
-        '''
+        """
         Extend a model (Duplicate all fields)
 
         :deprecated: since 0.9. Use :meth:`clone` instead
-        '''
+        """
         if isinstance(parent, list):
             parents = parent + [fields]
             model = Model.extend(name, *parents)
@@ -163,7 +153,7 @@ class Namespace(object):
         return self.add_model(name, model)
 
     def clone(self, name, *specs):
-        '''
+        """
         Clone a model (Duplicate all fields)
 
         :param str name: the resulting model name
@@ -171,28 +161,27 @@ class Namespace(object):
 
         .. seealso:: :meth:`Model.clone`
 
-        '''
+        """
         model = Model.clone(name, *specs)
         return self.add_model(name, model)
 
     def inherit(self, name, *specs):
-        '''
+        """
         Inherit a modal (use the Swagger composition pattern aka. allOf)
 
         .. seealso:: :meth:`Model.inherit`
-        '''
+        """
         model = Model.inherit(name, *specs)
         return self.add_model(name, model)
 
-
     def expect(self, *inputs, **kwargs):
-        '''
+        """
         A decorator to Specify the expected input model
 
         :param Model|Parse inputs: An expect model or request parser
         :param bool validate: whether to perform validation or not
 
-        '''
+        """
         expect = []
         params = {
             'validate': kwargs.get('validate', None) or self._validate,
@@ -204,18 +193,19 @@ class Namespace(object):
 
 
     def as_list(self, field):
-        '''Allow to specify nested lists for documentation'''
+        """Allow to specify nested lists for documentation"""
         field.__apidoc__ = merge(getattr(field, '__apidoc__', {}), {'as_list': True})
         return field
 
 
     def marshal_with(self, fields, as_list=False, code=200, description=None, **kwargs):
-        '''
-        A decorator specifying the fields to use for serialization.
+        """
+        A decorator to specify the returned response object values: attaches __apidoc__ attribute
+        to the decorated class or method.
 
         :param bool as_list: Indicate that the return type is a list (for the documentation)
         :param int code: Optionally give the expected HTTP response code if its different from 200
-        '''
+        """
 
         def wrapper(func):
             doc = {
@@ -224,18 +214,18 @@ class Namespace(object):
                 },
             }
             func.__apidoc__ = merge(getattr(func, '__apidoc__', {}), doc)
-            # deleted: marshal_with(fields, **kwargs)(func)
             return func
+
         return wrapper
 
 
     def marshal_list_with(self, fields, **kwargs):
-        '''A shortcut decorator for :meth:`~Api.marshal_with` with ``as_list=True``'''
+        """A shortcut decorator for :meth:`~Api.marshal_with` with ``as_list=True``"""
         return self.marshal_with(fields, True, **kwargs)
 
 
     def errorhandler(self, exception):
-        '''A decorator to register an error handler for a given exception'''
+        """A decorator to register an error handler for a given exception"""
         if inspect.isclass(exception) and issubclass(exception, Exception):
             # Register an error handler for a given exception
             def wrapper(func):
@@ -249,13 +239,13 @@ class Namespace(object):
 
 
     def param(self, name, description=None, _in='query', **kwargs):
-        '''
+        """
         A decorator to specify one of the expected parameters
 
         :param str name: the parameter name
-        :param str description: a small description
-        :param str _in: the parameter location `(query|header|formData|body|cookie)`
-        '''
+        :param str description: a small description of the parameter
+        :param str _in: the parameter location `(query|header|formData|body|cookie)`, by default set to `query`
+        """
         param = kwargs
         param['in'] = _in
         param['description'] = description
@@ -263,40 +253,40 @@ class Namespace(object):
 
 
     def response(self, code, description, model=None, **kwargs):
-        '''
+        """
         A decorator to specify one of the expected responses
 
         :param int code: the HTTP status code
         :param str description: a small description about the response
         :param Model model: an optional response model
 
-        '''
+        """
         return self.doc(responses={code: (description, model) if model else description})
 
 
     def header(self, name, description=None, **kwargs):
-        '''
+        """
         A decorator to specify one of the expected headers
 
         :param str name: the HTTP header name
         :param str description: a description about the header
 
-        '''
+        """
         return self.param(name, description=description, _in='header', **kwargs)
 
 
     def deprecated(self, func):
-        '''A decorator to mark a resource or a method as deprecated'''
+        """A decorator to mark a resource or a method as deprecated"""
         return self.doc(deprecated=True)(func)
 
 
     def security(self, *security_definition_names):
-        '''
+        """
         Operation security decorator
 
         Positional arguments specify alternative security requirements to use the operation.
         Requirements validity check is done when adding namespace to Api
-        '''
+        """
 
         def wrapper(documented):
             return self.doc(security=security_definition_names)(documented)
