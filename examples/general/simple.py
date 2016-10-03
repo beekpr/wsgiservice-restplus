@@ -27,7 +27,7 @@ post_core = {
         required=True),
 
     'text': fields.String(
-        pattern=r'[-0-9a-zA-Z]{300}',
+        pattern=r'[-0-9a-zA-Z]',
         description='Text content of the post',
         example='Well hello everybody! THis is ...',
         required=True),
@@ -156,8 +156,8 @@ class Post(Resource):
         post_content = dict(self.request.POST)
 
         if id in posts_database:
-            self.response.body_raw = {'error': "Id {} already in use! Please use POST request to /posts instead to have a "
-                                "non-conflicting id assigned automatically."}
+            self.response.body_raw = {'error': "Id {} already in use! Please use POST request to /posts "
+                                               "instead to have a non-conflicting id assigned automatically."}
             raise_409(self)
         else:
             posts_database[id] = post_content
@@ -171,9 +171,14 @@ class Post(Resource):
 
 
 security_defintions = {
+
     'basic_auth': {
-        "type": "basic"
+        "type": "basic",
+        "description": "Basic username & password OAuth2 authentication, "
+                       "eg. Authorization: Basic QWxhZGRpbjpPcGVuU2VzYW1l. "
+                       "Request returns a token string",
     },
+
     'api_token': {
         'type': 'apiKey',
         'name': 'Authorization',

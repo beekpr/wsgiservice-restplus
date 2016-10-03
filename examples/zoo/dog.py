@@ -1,8 +1,11 @@
-from wsgiservice_restplus import Namespace, Resource, fields
+from wsgiservice import Resource, raise_404
 
-api = Namespace('dogs', description='Dogs related operations')
+from wsgiservice_restplus import fields
+from wsgiservice_restplus.namespace import Namespace
 
-dog = api.model('Dog', {
+ns = Namespace('dogs', description='Dogs related operations')
+
+dog_model = ns.model('Dog', {
     'id': fields.String(required=True, description='The dog identifier'),
     'name': fields.String(required=True, description='The dog name'),
 })
@@ -12,24 +15,24 @@ DOGS = [
 ]
 
 
-@api.route('/')
+@ns.route('/')
 class DogList(Resource):
-    @api.doc('list_dogs')
-    @api.marshal_list_with(dog)
-    def get(self):
+    @ns.doc('list_dogs')
+    @ns.marshal_list_with(dog_model)
+    def GET(self):
         '''List all dogs'''
         return DOGS
 
 
-@api.route('/<id>')
-@api.param('id', 'The dog identifier')
-@api.response(404, 'Dog not found')
+@ns.route('/{id}')
+@ns.param('id', 'The dog identifier')
+@ns.response(404, 'Dog not found')
 class Dog(Resource):
-    @api.doc('get_dog')
-    @api.marshal_with(dog)
-    def get(self, id):
+    @ns.doc('get_dog')
+    @ns.marshal_with(dog_model)
+    def GET(self, id):
         '''Fetch a dog given its identifier'''
         for dog in DOGS:
             if dog['id'] == id:
                 return dog
-        api.abort(404)
+        raise_404
