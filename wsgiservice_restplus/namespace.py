@@ -252,6 +252,38 @@ class Namespace(object):
         return self.doc(params={name: param})
 
 
+    def param_new(self, name, description=None, _in='query', re=None, convert=None, **kwargs):
+        """
+        A decorator to specify one of the expected parameters
+
+        :param str name: the parameter name
+        :param str description: a small description of the parameter
+        :param str _in: the parameter location `(query|header|formData|body|cookie)`, by default set to `query`
+        """
+        param = kwargs
+        param['in'] = _in
+        param['description'] = description
+
+        return self.doc_and_validate(name, re=re, convert=convert, doc=description, params={name: param})
+
+
+    def doc_and_validate(self, name, re=None, convert=None, doc=None, **kwargs):
+        """A hybrid decorator: applies what self.doc() method does (adds some api documentation to the
+        decorated object) as well as applies the wsgiserive.decorators.validate() wrapper (for parameter validation
+        purposes)."""
+
+        def wrapper(documented):
+
+            if not hasattr(documented, '_validations'):
+                documented._validations = {}
+            documented._validations[name] = {'re': re, 'convert': convert, 'doc': doc}
+
+            self._handle_api_doc(documented, kwargs)
+            return documented
+
+        return wrapper
+
+
     def response(self, code, description, model=None, **kwargs):
         """
         A decorator to specify one of the expected responses
