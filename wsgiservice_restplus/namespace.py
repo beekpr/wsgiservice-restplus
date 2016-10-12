@@ -252,7 +252,7 @@ class Namespace(object):
         return self.doc(params={name: param})
 
 
-    def param_new(self, name, description=None, _in='query', re=None, convert=None, **kwargs):
+    def valid_param(self, name, description=None, _in='query', re=None, convert=None, **kwargs):
         """
         A decorator to specify one of the expected parameters and append validation conditions
         for wsgiservice.
