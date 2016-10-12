@@ -254,11 +254,20 @@ class Namespace(object):
 
     def param_new(self, name, description=None, _in='query', re=None, convert=None, **kwargs):
         """
-        A decorator to specify one of the expected parameters
+        A decorator to specify one of the expected parameters and append validation conditions
+        for wsgiservice.
 
         :param str name: the parameter name
-        :param str description: a small description of the parameter
+        :param str description: Parameter description for the API documentation.
         :param str _in: the parameter location `(query|header|formData|body|cookie)`, by default set to `query`
+        :param re: Regular expression to search for in the input parameter. If
+               this is not set, just validates if the parameter has been set.
+        :type re: regular expression
+        :param convert: Callable to convert the validated parameter value to the
+                    final data type. Ideal candidates for this are the
+                    built-ins int or float functions. If the function raises a
+                    ValueError, this is reported to the client as a 400 error.
+        :type convert: callable
         """
         param = kwargs
         param['in'] = _in
