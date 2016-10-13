@@ -244,7 +244,7 @@ class Namespace(object):
 
         :param str name: the parameter name
         :param str description: a small description of the parameter
-        :param str _in: the parameter location `(query|header|formData|body|cookie)`, by default set to `query`
+        :param str _in: the parameter location `(query|header|path|formData|body|cookie)`, by default set to `query`
         """
         param = kwargs
         param['in'] = _in
@@ -252,14 +252,15 @@ class Namespace(object):
         return self.doc(params={name: param})
 
 
-    def valid_param(self, name, description=None, _in='query', re=None, convert=None, **kwargs):
+    def valid_param(self, name, doc=None, _in='query', re=None, convert=None, mandatory=True, **kwargs):
         """
-        A decorator to specify one of the expected parameters and append validation conditions
-        for wsgiservice.
+        A decorator to specify one of the expected parameters and append validation conditions \
+        for wsgiservice. This is a hybryd decorator made from self.param, self.doc and \
+        wsgiservice.decorators.validate().
 
         :param str name: the parameter name
-        :param str description: Parameter description for the API documentation.
-        :param str _in: the parameter location `(query|header|formData|body|cookie)`, by default set to `query`
+        :param str doc: Parameter description for the API documentation.
+        :param str _in: the parameter location `(query|header|path|formData|body|cookie)`, `query` by default.
         :param re: Regular expression to search for in the input parameter. If
                this is not set, just validates if the parameter has been set.
         :type re: regular expression
@@ -268,29 +269,42 @@ class Namespace(object):
                     built-ins int or float functions. If the function raises a
                     ValueError, this is reported to the client as a 400 error.
         :type convert: callable
+        :param mandatory: Whether the parameter is mandatory. By default this is `True`.
+        :type mandatory: bool
         """
+
         param = kwargs
         param['in'] = _in
-        param['description'] = description
-
-        return self.doc_and_validate(name, re=re, convert=convert, doc=description, params={name: param})
-
-
-    def doc_and_validate(self, name, re=None, convert=None, doc=None, **kwargs):
-        """A hybrid decorator: applies what self.doc() method does (adds some api documentation to the
-        decorated object) as well as applies the wsgiserive.decorators.validate() wrapper (for parameter validation
-        purposes)."""
+        param['description'] = doc
 
         def wrapper(documented):
 
             if not hasattr(documented, '_validations'):
                 documented._validations = {}
-            documented._validations[name] = {'re': re, 'convert': convert, 'doc': doc}
+            documented._validations[name] = {'re': re, 'convert': convert, 'doc': doc, 'mandatory': mandatory}
 
-            self._handle_api_doc(documented, kwargs)
+            self._handle_api_doc(documented, param)
             return documented
 
         return wrapper
+
+    def path_param(self, name, doc=None, re=None, convert=None, mandatory=True, **kwargs):
+        """Validates and annotates the path parameter."""
+
+        return self.valid_param(name, doc=doc, _in='path', re=re,
+                                convert=convert, mandatory=mandatory, **kwargs)
+
+    def query_param(self, name, doc=None, re=None, convert=None, mandatory=True, **kwargs):
+        """Validates and annotates a query parameter."""
+
+        return self.valid_param(name, doc=doc, _in='query', re=re,
+                                convert=convert, mandatory=mandatory, **kwargs)
+
+    def payload_param(self, name, doc=None, re=None, convert=None, mandatory=True, **kwargs):
+        """Validates and annotates a parameter given in a payload body."""
+
+        return self.valid_param(name, doc=doc, _in='body', re=re,
+                                convert=convert, mandatory=mandatory, **kwargs)
 
 
     def response(self, code, description, model=None, **kwargs):
