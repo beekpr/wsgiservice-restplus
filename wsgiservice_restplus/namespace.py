@@ -252,7 +252,7 @@ class Namespace(object):
         return self.doc(params={name: param})
 
 
-    def valid_param(self, name, doc=None, _in='query', re=None, convert=None, mandatory=True, **kwargs):
+    def valid_param(self, name, doc='', _in='query', re=None, convert=None, mandatory=True, **kwargs):
         """
         A decorator to specify one of the expected parameters and append validation conditions \
         for wsgiservice. This is a hybryd decorator made from self.param, self.doc and \
@@ -275,7 +275,8 @@ class Namespace(object):
 
         param = kwargs
         param['in'] = _in
-        param['description'] = doc
+        param['description'] = doc or None
+        api_params = {'params': {name: param}}
 
         def wrapper(documented):
 
@@ -283,7 +284,7 @@ class Namespace(object):
                 documented._validations = {}
             documented._validations[name] = {'re': re, 'convert': convert, 'doc': doc, 'mandatory': mandatory}
 
-            self._handle_api_doc(documented, param)
+            self._handle_api_doc(documented, api_params)
             return documented
 
         return wrapper
