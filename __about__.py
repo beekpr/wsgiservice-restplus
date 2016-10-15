@@ -1,4 +1,4 @@
-__version__ = "v1.3"
+__version__ = "v1.4.1"
 
 __description__ = "wsgiservice module extension adding swagger support."
 
