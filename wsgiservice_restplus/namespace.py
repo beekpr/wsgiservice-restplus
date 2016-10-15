@@ -274,6 +274,7 @@ class Namespace(object):
         """
 
         param = kwargs
+        param['required'] = mandatory
         param['in'] = _in
         param['description'] = doc or None
         api_params = {'params': {name: param}}
