@@ -192,6 +192,16 @@ class Namespace(object):
         return self.doc(**params)
 
 
+    def query_model(self, model):  #todo: W.I.P - finish writing
+        """A decorator that adds model data to swagger api documentation as well as
+        applies wsgiservice validation using the model object provided.
+
+        :param model:
+        :return:
+        """
+        pass
+
+
     def as_list(self, field):
         """Allow to specify nested lists for documentation"""
         field.__apidoc__ = merge(getattr(field, '__apidoc__', {}), {'as_list': True})
