@@ -10,8 +10,17 @@ from __about__ import __version__
 from __about__ import __description__
 from __about__ import long_description
 
-with open('requirements.txt', 'r') as handle:
-    install_requires = [ m.rstrip('\n') for m in list(handle) ]
+install_requires = [
+    "pytz",
+    "jsonschema",
+    "six>=1.3.0",
+    "aniso8601>=0.82",
+    "wsgiservice==0.4.5"
+]
+
+dependency_links=[
+        "https://github.com/beekpr/wsgiservice/archive/0.4.5.zip#egg=wsgiservice-0.4.5"
+]
 
 tests_require = ['nose', 'rednose', 'blinker', 'tzlocal']
 dev_requires = ['minibench', 'tox', 'invoke'] + tests_require
@@ -37,6 +46,7 @@ setup(
     include_package_data=True,
     packages=find_packages(exclude=['tests', 'tests.*']),
     install_requires=install_requires,
+    dependency_links=dependency_links,
     tests_require=tests_require,
     extras_require={
         'test': tests_require,

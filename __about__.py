@@ -1,4 +1,4 @@
-__version__ = "0.0.1"
+__version__ = "v1.4.3"
 
 __description__ = "wsgiservice module extension adding swagger support."
 
@@ -6,6 +6,4 @@ long_description = """
 Extension to python WSGI module "wsgiservice" that adds support for emitting "swagger.json"
 content used to create API documentation.
 """
-
-
 

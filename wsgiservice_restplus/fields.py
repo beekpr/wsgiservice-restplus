@@ -132,30 +132,6 @@ class Raw(object):
         '''
         return value
 
-    # def output(self, key, obj):
-    #     '''
-    #     Pulls the value for the given key from the object, applies the
-    #     field's formatting and returns the result. If the key is not found
-    #     in the object, returns the default value. Field classes that create
-    #     values which do not require the existence of the key in the object
-    #     should override this and return the desired value.
-    #
-    #     :raises MarshallingError: In case of formatting problem
-    #     '''
-    #
-    #     value = get_value(key if self.attribute is None else self.attribute, obj)
-    #
-    #     if value is None:
-    #         default = self._v('default')
-    #         return self.format(default) if default else default
-    #
-    #     try:
-    #         data = self.format(value)
-    #     except MarshallingError as e:
-    #         msg = 'Unable to marshal field "{0}" value "{1}": {2}'.format(key, value, str(e))
-    #         raise MarshallingError(msg)
-    #     return self.mask.apply(data) if self.mask else data
-
     def _v(self, key):
         '''Helper for getting a value from attribute allowing callable'''
         value = getattr(self, key)
@@ -202,16 +178,6 @@ class Nested(Raw):
     @property
     def nested(self):
         return getattr(self.model, 'resolved', self.model)
-
-    # def output(self, key, obj):
-    #     value = get_value(key if self.attribute is None else self.attribute, obj)
-    #     if value is None:
-    #         if self.allow_null:
-    #             return None
-    #         elif self.default is not None:
-    #             return self.default
-    #
-    #     return marshal(value, self.nested)
 
     def schema(self):
         schema = super(Nested, self).schema()
@@ -273,17 +239,6 @@ class List(Raw):
                 val if (isinstance(val, dict) or is_attr(val)) and not is_nested else value)
             for idx, val in enumerate(value)
         ]
-
-    # def output(self, key, data):
-    #     value = get_value(key if self.attribute is None else self.attribute, data)
-    #     # we cannot really test for external dict behavior
-    #     if is_indexable_but_not_string(value) and not isinstance(value, dict):
-    #         return self.format(value)
-    #
-    #     if value is None:
-    #         return self._v('default')
-    #
-    #     return [marshal(value, self.container.nested)]
 
     def schema(self):
         schema = super(List, self).schema()
@@ -563,18 +518,6 @@ class Url(StringMixin, Raw):
         self.absolute = absolute
         self.scheme = scheme
 
-    # def output(self, key, obj):
-    #     try:
-    #         data = to_marshallable_type(obj)
-    #         endpoint = self.endpoint if self.endpoint is not None else request.endpoint
-    #         o = urlparse(url_for(endpoint, _external=self.absolute, **data))
-    #         if self.absolute:
-    #             scheme = self.scheme if self.scheme is not None else o.scheme
-    #             return urlunparse((scheme, o.netloc, o.path, "", "", ""))
-    #         return urlunparse(("", "", o.path, "", "", ""))
-    #     except TypeError as te:
-    #         raise MarshallingError(te)
-
 
 class FormattedString(StringMixin, Raw):
     '''
@@ -600,13 +543,6 @@ class FormattedString(StringMixin, Raw):
         super(FormattedString, self).__init__(**kwargs)
         self.src_str = text_type(src_str)
 
-    # def output(self, key, obj):
-    #     try:
-    #         data = to_marshallable_type(obj)
-    #         return self.src_str.format(**data)
-    #     except (TypeError, IndexError) as error:
-    #         raise MarshallingError(error)
-
 
 class ClassName(String):
     '''
@@ -617,12 +553,6 @@ class ClassName(String):
     def __init__(self, dash=False, **kwargs):
         super(ClassName, self).__init__(**kwargs)
         self.dash = dash
-
-    # def output(self, key, obj):
-    #     classname = obj.__class__.__name__
-    #     if classname == 'dict':
-    #         return 'object'
-    #     return camel_to_dash(classname) if self.dash else classname
 
 
 class Polymorph(Nested):
@@ -648,28 +578,6 @@ class Polymorph(Nested):
         self.mapping = mapping
         parent = self.resolve_ancestor(list(itervalues(mapping)))
         super(Polymorph, self).__init__(parent, allow_null=not required, **kwargs)
-
-    # def output(self, key, obj):
-    #     # Copied from upstream NestedField
-    #     value = get_value(key if self.attribute is None else self.attribute, obj)
-    #     if value is None:
-    #         if self.allow_null:
-    #             return None
-    #         elif self.default is not None:
-    #             return self.default
-    #
-    #     # Handle mappings
-    #     if not hasattr(value, '__class__'):
-    #         raise ValueError('Polymorph field only accept class instances')
-    #
-    #     candidates = [fields for cls, fields in iteritems(self.mapping) if isinstance(value, cls)]
-    #
-    #     if len(candidates) <= 0:
-    #         raise ValueError('Unknown class: ' + value.__class__.__name__)
-    #     elif len(candidates) > 1:
-    #         raise ValueError('Unable to determine a candidate for: ' + value.__class__.__name__)
-    #     else:
-    #         return marshal(value, candidates[0].resolved, mask=self.mask)
 
 
     def resolve_ancestor(self, models):
