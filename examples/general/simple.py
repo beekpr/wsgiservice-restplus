@@ -102,7 +102,7 @@ class Posts(Resource):
         return posts_database['id']
 
 
-@ns.param(name="id", description="The ID of an existing post", type=int) #<-- Defines the id query param for all methods
+@ns.path_param(name="id", doc="The ID of an existing post", type=int) #<-- Defines the id query param for all methods
 @ns.route('/post/{id}')
 class Post(Resource):
 
