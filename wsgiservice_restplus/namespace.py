@@ -192,14 +192,49 @@ class Namespace(object):
         return self.doc(**params)
 
 
-    def query_model(self, model):  #todo: W.I.P - finish writing
+    def payload_model(self, *models, **kwargs):  #todo: W.I.P - finish writing
         """A decorator that adds model data to swagger api documentation as well as
         applies wsgiservice validation using the model object provided.
 
         :param model:
         :return:
         """
-        pass
+
+        expect = []
+        params = {
+            'validate': self._validate,
+            'expect': expect
+        }
+        for model in models:
+            expect.append(model)
+
+            # run validate on each payload param:
+            validate_params = {}
+            validate_params['required'] = model[]
+            validate_params['in'] = model[]
+
+
+
+        def wrapper(documented):
+
+            self._handle_api_doc(documented, api_params)
+            return documented
+
+        return wrapper
+
+
+    def validate_model_parameter(self, cls, model):
+
+        """Adds _validate attribute to a method/class for each field element in a Model
+
+        :param model:
+        :return:
+        """
+
+        if not hasattr(documented, '_validations'):
+            documented._validations = {}
+        documented._validations[name] = {'re': re, 'convert': convert, 'doc': doc, 'mandatory': mandatory}
+
 
 
     def as_list(self, field):
@@ -295,8 +330,10 @@ class Namespace(object):
                 documented._validations = {}
             documented._validations[name] = {'re': re, 'convert': convert, 'doc': doc, 'mandatory': mandatory}
 
+            # ---- doc ---:
             self._handle_api_doc(documented, api_params)
             return documented
+            # ------------
 
         return wrapper
 

@@ -92,8 +92,8 @@ class Raw(object):
         than the publicly named value.
     :param str title: The field title (for documentation purpose)
     :param str description: The field description (for documentation purpose)
-    :param bool required: Is the field required ?
-    :param bool readonly: Is the field read only ? (for documentation purpose)
+    :param bool required: Is the field mandatory?
+    :param bool readonly: Is the field read only? (for documentation purpose)
     :param example: An optional data example (for documentation purpose)
     :param callable mask: An optional mask function to be applied to output
     '''
@@ -105,15 +105,22 @@ class Raw(object):
     __schema_example__ = None
 
     def __init__(self, default=None, attribute=None, title=None, description=None,
-                 required=None, readonly=None, example=None, mask=None, **kwargs):
+                 mandatory=None, readonly=None, example=None, mask=None, **kwargs):
         self.attribute = attribute
         self.default = default
         self.title = title
         self.description = description
-        self.required = required
+        self.required = mandatory
         self.readonly = readonly
         self.example = example or self.__schema_example__
         self.mask = mask
+
+        self.valid_params = {
+            "re": kwargs.get('re', None),
+            "convert": kwargs.get('convert', None),
+            "doc": self.description or None,
+            "mandatory": kwargs.get('mandatory', False)
+        }
 
     def format(self, value):
         '''
@@ -188,8 +195,6 @@ class Nested(Raw):
             schema['items'] = {'$ref': ref}
         else:
             schema['$ref'] = ref
-            # if not self.allow_null and not self.readonly:
-            #     schema['required'] = True
 
         return schema
 
@@ -574,10 +579,10 @@ class Polymorph(Nested):
 
     :param dict mapping: Maps classes to their model/fields representation
     '''
-    def __init__(self, mapping, required=False, **kwargs):
+    def __init__(self, mapping, mandatory=False, **kwargs):
         self.mapping = mapping
         parent = self.resolve_ancestor(list(itervalues(mapping)))
-        super(Polymorph, self).__init__(parent, allow_null=not required, **kwargs)
+        super(Polymorph, self).__init__(parent, allow_null=not mandatory, **kwargs)
 
 
     def resolve_ancestor(self, models):
