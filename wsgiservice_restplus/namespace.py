@@ -174,7 +174,7 @@ class Namespace(object):
         model = Model.inherit(name, *specs)
         return self.add_model(name, model)
 
-    def expect(self, *inputs, **kwargs):    #todo: to be deprecated!
+    def expect(self, *inputs, **kwargs):
         """
         A decorator to Specify the expected input model
 
@@ -222,9 +222,7 @@ class Namespace(object):
 
         return wrapper
 
-
     def _prepare_validation_dict(self, model):
-
         """Generates the content of the _validations dictionary (normally used by validate decorator \
         from wsgiservice.decorators) from a single Model object.
 
@@ -235,7 +233,7 @@ class Namespace(object):
 
         validations = {}
 
-        for field_name, field in model.items():
+        for field_name, field in model.iteritems():
             validations[field_name] = {
                 're': field.valid_params.get('re', None),
                 'convert': field.valid_params.get('convert', None),
@@ -339,10 +337,8 @@ class Namespace(object):
                 documented._validations = {}
             documented._validations[name] = {'re': re, 'convert': convert, 'doc': doc, 'mandatory': mandatory}
 
-            # ---- doc ---:
             self._handle_api_doc(documented, api_params)
             return documented
-            # ------------
 
         return wrapper
 
