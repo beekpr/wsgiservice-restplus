@@ -193,7 +193,7 @@ class Namespace(object):
 
 
     def payload_model(self, *models, **kwargs):  #todo: W.I.P - finish writing
-        """A decorator that adds model data to swagger api documentation as well as
+        """A decorator that adds payload parameters model data to swagger api documentation as well as
         applies wsgiservice validation using the model object provided.
 
         :param model:
@@ -205,17 +205,39 @@ class Namespace(object):
             'validate': self._validate,
             'expect': expect
         }
+
         for model in models:
             expect.append(model)
 
-            # run validate on each payload param:
-            validate_params = {}
-            validate_params['required'] = model[]
-            validate_params['in'] = model[]
+            validations = {}
+            api_params = {}
 
+            for field_name, field in model.items():
 
+                doc = field.valid_params.get('doc', None)
+                mandatory = field.valid_params.get('mandatory', False)
+
+                # run validate on each payload param:
+                param = {
+                    'required': mandatory,
+                    'description': doc,
+                    'in': 'body',
+                }
+                api_params = {'expect': {field_name: param}}
+
+                # Add each param to validations:
+                validations[field_name] = {
+                    're': field.valid_params.get('re', None),
+                    'convert': field.valid_params.get('convert', None),
+                    'doc': doc,
+                    'mandatory': mandatory,
+                }
 
         def wrapper(documented):
+
+            if not hasattr(documented, '_validations'):
+                documented._validations = {}
+            documented._validations = validations
 
             self._handle_api_doc(documented, api_params)
             return documented
@@ -231,11 +253,28 @@ class Namespace(object):
         :return:
         """
 
-        if not hasattr(documented, '_validations'):
-            documented._validations = {}
-        documented._validations[name] = {'re': re, 'convert': convert, 'doc': doc, 'mandatory': mandatory}
+        validations = {}
+        api_params = {}
 
+        for field_name, field in model.items():
+            doc = field.valid_params.get('doc', None)
+            mandatory = field.valid_params.get('mandatory', False)
 
+            # run validate on each payload param:
+            param = {
+                'required': mandatory,
+                'description': doc,
+                'in': 'body',
+            }
+            api_params = {'params': {field_name: param}}
+
+            # Add each param to validations:
+            validations[field_name] = {
+                're': field.valid_params.get('re', None),
+                'convert': field.valid_params.get('convert', None),
+                'doc': doc,
+                'mandatory': mandatory,
+            }
 
     def as_list(self, field):
         """Allow to specify nested lists for documentation"""
