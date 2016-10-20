@@ -243,7 +243,6 @@ class Namespace(object):
 
         return validations
 
-
     def as_list(self, field):
         """Allow to specify nested lists for documentation"""
         field.__apidoc__ = merge(getattr(field, '__apidoc__', {}), {'as_list': True})
@@ -320,7 +319,7 @@ class Namespace(object):
                     final data type. Ideal candidates for this are the
                     built-ins int or float functions. If the function raises a
                     ValueError, this is reported to the client as a 400 error.
-        :type convert: callable
+        :type convert: callable or type (eg. int, str, bool, etc.)
         :param mandatory: Whether the parameter is mandatory. By default this is `True`.
         :type mandatory: bool
         """
@@ -329,6 +328,12 @@ class Namespace(object):
         param['required'] = mandatory
         param['in'] = _in
         param['description'] = doc or None
+
+        if type(convert) == type:
+            param['type'] = convert
+        elif hasattr(convert, "converts_to_type"):
+            param['type'] = eval(convert.converts_to_type)
+
         api_params = {'params': {name: param}}
 
         def wrapper(documented):
