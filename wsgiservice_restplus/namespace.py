@@ -174,7 +174,7 @@ class Namespace(object):
         model = Model.inherit(name, *specs)
         return self.add_model(name, model)
 
-    def expect(self, *inputs, **kwargs):
+    def expect(self, *inputs, **kwargs):    #todo: to be deprecated!
         """
         A decorator to Specify the expected input model
 
@@ -192,12 +192,11 @@ class Namespace(object):
         return self.doc(**params)
 
 
-    def payload_model(self, *models, **kwargs):  #todo: W.I.P - finish writing
+    def payload_model(self, *models):
         """A decorator that adds payload parameters model data to swagger api documentation as well as
         applies wsgiservice validation using the model object provided.
 
-        :param model:
-        :return:
+        :param models: model(s) objects to extract api information from on request payload model
         """
 
         expect = []
@@ -205,76 +204,47 @@ class Namespace(object):
             'validate': self._validate,
             'expect': expect
         }
+        validations = {}
 
         for model in models:
             expect.append(model)
-
-            validations = {}
-            api_params = {}
-
-            for field_name, field in model.items():
-
-                doc = field.valid_params.get('doc', None)
-                mandatory = field.valid_params.get('mandatory', False)
-
-                # run validate on each payload param:
-                param = {
-                    'required': mandatory,
-                    'description': doc,
-                    'in': 'body',
-                }
-                api_params = {'expect': {field_name: param}}
-
-                # Add each param to validations:
-                validations[field_name] = {
-                    're': field.valid_params.get('re', None),
-                    'convert': field.valid_params.get('convert', None),
-                    'doc': doc,
-                    'mandatory': mandatory,
-                }
+            model_validations = self._prepare_validation_dict(model)
+            validations.update(model_validations)
 
         def wrapper(documented):
 
             if not hasattr(documented, '_validations'):
                 documented._validations = {}
-            documented._validations = validations
+            documented._validations.update(validations)
 
-            self._handle_api_doc(documented, api_params)
+            self._handle_api_doc(documented, params)
             return documented
 
         return wrapper
 
 
-    def validate_model_parameter(self, cls, model):
+    def _prepare_validation_dict(self, model):
 
-        """Adds _validate attribute to a method/class for each field element in a Model
+        """Generates the content of the _validations dictionary (normally used by validate decorator \
+        from wsgiservice.decorators) from a single Model object.
 
-        :param model:
-        :return:
+        :param model: instance of the
+        :return: validations dictionary (equivalent to _validations from validate decorator from wsgiservice)
+        :rtype: dict
         """
 
         validations = {}
-        api_params = {}
 
         for field_name, field in model.items():
-            doc = field.valid_params.get('doc', None)
-            mandatory = field.valid_params.get('mandatory', False)
-
-            # run validate on each payload param:
-            param = {
-                'required': mandatory,
-                'description': doc,
-                'in': 'body',
-            }
-            api_params = {'params': {field_name: param}}
-
-            # Add each param to validations:
             validations[field_name] = {
                 're': field.valid_params.get('re', None),
                 'convert': field.valid_params.get('convert', None),
-                'doc': doc,
-                'mandatory': mandatory,
+                'doc': field.valid_params.get('doc', None),
+                'mandatory': field.valid_params.get('mandatory', False),
             }
+
+        return validations
+
 
     def as_list(self, field):
         """Allow to specify nested lists for documentation"""
@@ -375,6 +345,7 @@ class Namespace(object):
             # ------------
 
         return wrapper
+
 
     def path_param(self, name, doc=None, re=None, convert=None, mandatory=True, **kwargs):
         """Validates and annotates the path parameter."""
