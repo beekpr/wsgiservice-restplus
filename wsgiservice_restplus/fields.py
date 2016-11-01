@@ -78,6 +78,16 @@ def to_marshallable_type(obj):
     return dict(obj.__dict__)
 
 
+def make_mandatory(field_obj):
+    """Makes the field object mandatory"""
+
+    if hasattr(field_obj, 'valid_params'):
+        field_obj.valid_params['mandatory'] = True
+        return field_obj
+    else:
+        return field_obj
+
+
 class Raw(object):
     '''
     Raw provides a base field class from which others should extend. It
@@ -207,6 +217,7 @@ class Nested(Raw):
 
 
 class List(Raw):
+
     '''
     Field for marshalling lists of other fields.
 
@@ -214,6 +225,7 @@ class List(Raw):
 
     :param cls_or_instance: The field type the list will contain.
     '''
+
     def __init__(self, cls_or_instance, **kwargs):
         self.min_items = kwargs.pop('min_items', None)
         self.max_items = kwargs.pop('max_items', None)
@@ -228,6 +240,10 @@ class List(Raw):
             if not isinstance(cls_or_instance, Raw):
                 raise MarshallingError(error_msg)
             self.container = cls_or_instance
+
+    def __iter__(self):
+
+        return self.model
 
     def format(self, value):
         # Convert all instances in typed list to container type
