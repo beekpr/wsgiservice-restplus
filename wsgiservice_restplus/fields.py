@@ -231,6 +231,8 @@ class List(Raw):
         self.max_items = kwargs.pop('max_items', None)
         self.unique = kwargs.pop('unique', None)
         super(List, self).__init__(**kwargs)
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = list
         error_msg = 'The type of the list elements must be a subclass of fields.Raw'
         if isinstance(cls_or_instance, type):
             if not issubclass(cls_or_instance, Raw):
@@ -286,6 +288,8 @@ class StringMixin(object):
         self.max_length = kwargs.pop('max_length', None)
         self.pattern = kwargs.pop('pattern', None)
         super(StringMixin, self).__init__(*args, **kwargs)
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = str
 
     def schema(self):
         schema = super(StringMixin, self).schema()
@@ -336,6 +340,8 @@ class String(StringMixin, Raw):
         self.discriminator = kwargs.pop('discriminator', None)
         super(String, self).__init__(*args, **kwargs)
         self.required = self.discriminator or self.required
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = str
 
     def format(self, value):
         try:
@@ -360,6 +366,11 @@ class Integer(NumberMixin, Raw):
     '''
     __schema_type__ = 'integer'
 
+    def __init__(self, *args, **kwargs):
+        super(Integer, self).__init__(*args, **kwargs)
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = int
+
     def format(self, value):
         try:
             if value is None:
@@ -375,6 +386,11 @@ class Float(NumberMixin, Raw):
 
     ex : 3.141592653589793 3.1415926535897933e-06 3.141592653589793e+24 nan inf -inf
     '''
+
+    def __init__(self, *args, **kwargs):
+        super(Integer, self).__init__(*args, **kwargs)
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = float
 
     def format(self, value):
         try:
@@ -420,6 +436,11 @@ class Boolean(Raw):
     '''
     __schema_type__ = 'boolean'
 
+    def __init__(self, *args, **kwargs):
+        super(Boolean, self).__init__(*args, **kwargs)
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = bool
+
     def format(self, value):
         return bool(value)
 
@@ -440,6 +461,8 @@ class DateTime(MinMaxMixin, Raw):
     def __init__(self, dt_format='iso8601', **kwargs):
         super(DateTime, self).__init__(**kwargs)
         self.dt_format = dt_format
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = str
 
     def parse(self, value):
         if value is None:
@@ -509,6 +532,8 @@ class Date(DateTime):
     def __init__(self, **kwargs):
         kwargs.pop('dt_format', None)
         super(Date, self).__init__(dt_format='iso8601', **kwargs)
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = str
 
     def parse(self, value):
         if value is None:
@@ -538,6 +563,9 @@ class Url(StringMixin, Raw):
         self.endpoint = endpoint
         self.absolute = absolute
         self.scheme = scheme
+
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = str
 
 
 class FormattedString(StringMixin, Raw):
