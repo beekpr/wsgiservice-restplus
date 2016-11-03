@@ -79,7 +79,7 @@ def to_marshallable_type(obj):
 
 
 def make_mandatory(field_obj):
-    """Makes the field object mandatory"""
+    """Makes the field object mandatory - WIP """
 
     if hasattr(field_obj, 'valid_params'):
         field_obj.valid_params['mandatory'] = True
