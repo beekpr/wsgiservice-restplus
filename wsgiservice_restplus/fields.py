@@ -388,7 +388,7 @@ class Float(NumberMixin, Raw):
     '''
 
     def __init__(self, *args, **kwargs):
-        super(Integer, self).__init__(*args, **kwargs)
+        super(Float, self).__init__(*args, **kwargs)
         if not self.valid_params.get('convert'):
             self.valid_params['convert'] = float
 
