@@ -11,6 +11,7 @@ from six import itervalues, text_type, string_types
 from wsgiservice_restplus.errors import RestError
 from wsgiservice_restplus.inputs import date_from_iso8601, datetime_from_iso8601, datetime_from_rfc822
 from wsgiservice_restplus.utils import not_none
+from wsgiservice_restplus.converters import Boolean as BooleanConverter
 
 
 __all__ = ('Raw', 'String', 'FormattedString',
@@ -439,7 +440,7 @@ class Boolean(Raw):
     def __init__(self, *args, **kwargs):
         super(Boolean, self).__init__(*args, **kwargs)
         if not self.valid_params.get('convert'):
-            self.valid_params['convert'] = bool
+            self.valid_params['convert'] = BooleanConverter
 
     def format(self, value):
         return bool(value)
