@@ -122,11 +122,6 @@ class Api(object):
         for name, definition in ns.models.items():
             self.models[name] = definition
 
-        # TODO: FUL-3505
-        # # Register error handlers
-        # for exception, handler in ns.error_handlers.items():
-        #     self.error_handlers[exception] = handler
-
 
     def _security_requirements_in_authorizations(self, ns):
 
@@ -138,7 +133,6 @@ class Api(object):
                         if security_requirement not in self.authorizations:
                             return False
         return True
-
 
     def get_resources(self):
         """Returns resources held by this instance, then creates and add SwaggerResourceClass as well

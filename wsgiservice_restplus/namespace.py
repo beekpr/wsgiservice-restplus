@@ -192,6 +192,57 @@ class Namespace(object):
         return self.doc(**params)
 
 
+    def payload_model(self, *models):
+        """A decorator that adds payload parameters model data to swagger api documentation as well as
+        applies wsgiservice validation using the model object provided.
+
+        :param models: model(s) objects to extract api information from on request payload model
+        """
+
+        expect = []
+        params = {
+            'validate': self._validate,
+            'expect': expect
+        }
+        validations = {}
+
+        for model in models:
+            expect.append(model)
+            model_validations = self._prepare_validation_dict(model)
+            validations.update(model_validations)
+
+        def wrapper(documented):
+
+            if not hasattr(documented, '_validations'):
+                documented._validations = {}
+            documented._validations.update(validations)
+
+            self._handle_api_doc(documented, params)
+            return documented
+
+        return wrapper
+
+    def _prepare_validation_dict(self, model):
+        """Generates the content of the _validations dictionary (normally used by validate decorator \
+        from wsgiservice.decorators) from a single Model object.
+
+        :param model: instance of the
+        :return: validations dictionary (equivalent to _validations from validate decorator from wsgiservice)
+        :rtype: dict
+        """
+
+        validations = {}
+
+        for field_name, field in model.iteritems():
+            validations[field_name] = {
+                're': field.valid_params.get('re', None),
+                'convert': field.valid_params.get('convert', None),
+                'doc': field.valid_params.get('doc', None),
+                'mandatory': field.valid_params.get('mandatory', False),
+            }
+
+        return validations
+
     def as_list(self, field):
         """Allow to specify nested lists for documentation"""
         field.__apidoc__ = merge(getattr(field, '__apidoc__', {}), {'as_list': True})
@@ -268,7 +319,7 @@ class Namespace(object):
                     final data type. Ideal candidates for this are the
                     built-ins int or float functions. If the function raises a
                     ValueError, this is reported to the client as a 400 error.
-        :type convert: callable
+        :type convert: callable or type (eg. int, str, bool, etc.)
         :param mandatory: Whether the parameter is mandatory. By default this is `True`.
         :type mandatory: bool
         """
@@ -277,6 +328,12 @@ class Namespace(object):
         param['required'] = mandatory
         param['in'] = _in
         param['description'] = doc or None
+
+        if type(convert) == type:
+            param['type'] = convert
+        elif hasattr(convert, "converts_to_type"):
+            param['type'] = eval(convert.converts_to_type)
+
         api_params = {'params': {name: param}}
 
         def wrapper(documented):
@@ -289,6 +346,7 @@ class Namespace(object):
             return documented
 
         return wrapper
+
 
     def path_param(self, name, doc=None, re=None, convert=None, mandatory=True, **kwargs):
         """Validates and annotates the path parameter."""

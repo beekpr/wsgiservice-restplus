@@ -11,6 +11,8 @@ from six import itervalues, text_type, string_types
 from wsgiservice_restplus.errors import RestError
 from wsgiservice_restplus.inputs import date_from_iso8601, datetime_from_iso8601, datetime_from_rfc822
 from wsgiservice_restplus.utils import not_none
+from wsgiservice_restplus.converters import Boolean as BooleanConverter
+from wsgiservice_restplus.converters import String as StringConverter
 
 
 __all__ = ('Raw', 'String', 'FormattedString',
@@ -78,6 +80,16 @@ def to_marshallable_type(obj):
     return dict(obj.__dict__)
 
 
+def make_mandatory(field_obj):
+    """Makes the field object mandatory - WIP """
+
+    if hasattr(field_obj, 'valid_params'):
+        field_obj.valid_params['mandatory'] = True
+        return field_obj
+    else:
+        return field_obj
+
+
 class Raw(object):
     '''
     Raw provides a base field class from which others should extend. It
@@ -92,8 +104,8 @@ class Raw(object):
         than the publicly named value.
     :param str title: The field title (for documentation purpose)
     :param str description: The field description (for documentation purpose)
-    :param bool required: Is the field required ?
-    :param bool readonly: Is the field read only ? (for documentation purpose)
+    :param bool required: Is the field mandatory?
+    :param bool readonly: Is the field read only? (for documentation purpose)
     :param example: An optional data example (for documentation purpose)
     :param callable mask: An optional mask function to be applied to output
     '''
@@ -105,15 +117,26 @@ class Raw(object):
     __schema_example__ = None
 
     def __init__(self, default=None, attribute=None, title=None, description=None,
-                 required=None, readonly=None, example=None, mask=None, **kwargs):
+                 mandatory=None, readonly=None, example=None, mask=None, **kwargs):
         self.attribute = attribute
         self.default = default
         self.title = title
         self.description = description
-        self.required = required
+        self.required = mandatory
         self.readonly = readonly
         self.example = example or self.__schema_example__
         self.mask = mask
+
+        self.valid_params = {
+            "re": kwargs.get('re', None),
+            "convert": kwargs.get('convert', None),
+            "doc": self.description or None,
+            "mandatory": kwargs.get('mandatory', False)
+        }
+
+        format_description = kwargs.get('add_format')
+        if format_description and type(format_description) == str:
+            self.description += ' ' + format_description
 
     def format(self, value):
         '''
@@ -188,8 +211,6 @@ class Nested(Raw):
             schema['items'] = {'$ref': ref}
         else:
             schema['$ref'] = ref
-            # if not self.allow_null and not self.readonly:
-            #     schema['required'] = True
 
         return schema
 
@@ -202,6 +223,7 @@ class Nested(Raw):
 
 
 class List(Raw):
+
     '''
     Field for marshalling lists of other fields.
 
@@ -209,11 +231,14 @@ class List(Raw):
 
     :param cls_or_instance: The field type the list will contain.
     '''
+
     def __init__(self, cls_or_instance, **kwargs):
         self.min_items = kwargs.pop('min_items', None)
         self.max_items = kwargs.pop('max_items', None)
         self.unique = kwargs.pop('unique', None)
         super(List, self).__init__(**kwargs)
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = list
         error_msg = 'The type of the list elements must be a subclass of fields.Raw'
         if isinstance(cls_or_instance, type):
             if not issubclass(cls_or_instance, Raw):
@@ -223,6 +248,10 @@ class List(Raw):
             if not isinstance(cls_or_instance, Raw):
                 raise MarshallingError(error_msg)
             self.container = cls_or_instance
+
+    def __iter__(self):
+
+        return self.model
 
     def format(self, value):
         # Convert all instances in typed list to container type
@@ -265,6 +294,8 @@ class StringMixin(object):
         self.max_length = kwargs.pop('max_length', None)
         self.pattern = kwargs.pop('pattern', None)
         super(StringMixin, self).__init__(*args, **kwargs)
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = str
 
     def schema(self):
         schema = super(StringMixin, self).schema()
@@ -315,6 +346,8 @@ class String(StringMixin, Raw):
         self.discriminator = kwargs.pop('discriminator', None)
         super(String, self).__init__(*args, **kwargs)
         self.required = self.discriminator or self.required
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = StringConverter
 
     def format(self, value):
         try:
@@ -339,6 +372,11 @@ class Integer(NumberMixin, Raw):
     '''
     __schema_type__ = 'integer'
 
+    def __init__(self, *args, **kwargs):
+        super(Integer, self).__init__(*args, **kwargs)
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = int
+
     def format(self, value):
         try:
             if value is None:
@@ -354,6 +392,11 @@ class Float(NumberMixin, Raw):
 
     ex : 3.141592653589793 3.1415926535897933e-06 3.141592653589793e+24 nan inf -inf
     '''
+
+    def __init__(self, *args, **kwargs):
+        super(Float, self).__init__(*args, **kwargs)
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = float
 
     def format(self, value):
         try:
@@ -399,26 +442,36 @@ class Boolean(Raw):
     '''
     __schema_type__ = 'boolean'
 
+    def __init__(self, *args, **kwargs):
+        super(Boolean, self).__init__(*args, **kwargs)
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = BooleanConverter
+
     def format(self, value):
         return bool(value)
 
 
 class DateTime(MinMaxMixin, Raw):
-    '''
-    Return a formatted datetime string in UTC. Supported formats are RFC 822 and ISO 8601.
+    """
+    Return a formatted datetime string in UTC.
 
     See :func:`email.utils.formatdate` for more info on the RFC 822 format.
 
     See :meth:`datetime.datetime.isoformat` for more info on the ISO 8601 format.
 
     :param str dt_format: ``rfc822`` or ``iso8601``
-    '''
+    :keyword add_format: Additional time format string note to be added to the
+    field.description, eg. "(UTC timezone, `yyyy-mm-ddTHH:MM:SS` format)".
+    :type add_format: str
+    """
     __schema_type__ = 'string'
     __schema_format__ = 'date-time'
 
     def __init__(self, dt_format='iso8601', **kwargs):
         super(DateTime, self).__init__(**kwargs)
         self.dt_format = dt_format
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = str
 
     def parse(self, value):
         if value is None:
@@ -488,6 +541,8 @@ class Date(DateTime):
     def __init__(self, **kwargs):
         kwargs.pop('dt_format', None)
         super(Date, self).__init__(dt_format='iso8601', **kwargs)
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = str
 
     def parse(self, value):
         if value is None:
@@ -517,6 +572,9 @@ class Url(StringMixin, Raw):
         self.endpoint = endpoint
         self.absolute = absolute
         self.scheme = scheme
+
+        if not self.valid_params.get('convert'):
+            self.valid_params['convert'] = str
 
 
 class FormattedString(StringMixin, Raw):
@@ -574,10 +632,10 @@ class Polymorph(Nested):
 
     :param dict mapping: Maps classes to their model/fields representation
     '''
-    def __init__(self, mapping, required=False, **kwargs):
+    def __init__(self, mapping, mandatory=False, **kwargs):
         self.mapping = mapping
         parent = self.resolve_ancestor(list(itervalues(mapping)))
-        super(Polymorph, self).__init__(parent, allow_null=not required, **kwargs)
+        super(Polymorph, self).__init__(parent, allow_null=not mandatory, **kwargs)
 
 
     def resolve_ancestor(self, models):
