@@ -447,15 +447,18 @@ class Boolean(Raw):
 
 
 class DateTime(MinMaxMixin, Raw):
-    '''
-    Return a formatted datetime string in UTC. Supported formats are RFC 822 and ISO 8601.
+    """
+    Return a formatted datetime string in UTC.
 
     See :func:`email.utils.formatdate` for more info on the RFC 822 format.
 
     See :meth:`datetime.datetime.isoformat` for more info on the ISO 8601 format.
 
     :param str dt_format: ``rfc822`` or ``iso8601``
-    '''
+    :keyword add_format: Additional time format string note to be added to the
+    field.description, eg. "(UTC timezone, `yyyy-mm-ddTHH:MM:SS` format)".
+    :type add_format: str
+    """
     __schema_type__ = 'string'
     __schema_format__ = 'date-time'
 
@@ -464,6 +467,10 @@ class DateTime(MinMaxMixin, Raw):
         self.dt_format = dt_format
         if not self.valid_params.get('convert'):
             self.valid_params['convert'] = str
+
+        format_description = kwargs.get('add_format')
+        if format_description and type(format_description) == str:
+            self.description += format_description
 
     def parse(self, value):
         if value is None:
