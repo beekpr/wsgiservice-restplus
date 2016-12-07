@@ -12,6 +12,7 @@ from wsgiservice_restplus.errors import RestError
 from wsgiservice_restplus.inputs import date_from_iso8601, datetime_from_iso8601, datetime_from_rfc822
 from wsgiservice_restplus.utils import not_none
 from wsgiservice_restplus.converters import Boolean as BooleanConverter
+from wsgiservice_restplus.converters import String as StringConverter
 
 
 __all__ = ('Raw', 'String', 'FormattedString',
@@ -346,7 +347,7 @@ class String(StringMixin, Raw):
         super(String, self).__init__(*args, **kwargs)
         self.required = self.discriminator or self.required
         if not self.valid_params.get('convert'):
-            self.valid_params['convert'] = str
+            self.valid_params['convert'] = StringConverter
 
     def format(self, value):
         try:
