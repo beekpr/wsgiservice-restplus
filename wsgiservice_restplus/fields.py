@@ -133,6 +133,10 @@ class Raw(object):
             "mandatory": kwargs.get('mandatory', False)
         }
 
+        format_description = kwargs.get('add_format')
+        if format_description and type(format_description) == str:
+            self.description += ' ' + format_description
+
     def format(self, value):
         '''
         Formats a field's value. No-op by default - field classes that
@@ -467,10 +471,6 @@ class DateTime(MinMaxMixin, Raw):
         self.dt_format = dt_format
         if not self.valid_params.get('convert'):
             self.valid_params['convert'] = str
-
-        format_description = kwargs.get('add_format')
-        if format_description and type(format_description) == str:
-            self.description += format_description
 
     def parse(self, value):
         if value is None:
