@@ -295,7 +295,7 @@ class StringMixin(object):
         self.pattern = kwargs.pop('pattern', None)
         super(StringMixin, self).__init__(*args, **kwargs)
         if not self.valid_params.get('convert'):
-            self.valid_params['convert'] = str
+            self.valid_params['convert'] = StringConverter
 
     def schema(self):
         schema = super(StringMixin, self).schema()
@@ -471,7 +471,7 @@ class DateTime(MinMaxMixin, Raw):
         super(DateTime, self).__init__(**kwargs)
         self.dt_format = dt_format
         if not self.valid_params.get('convert'):
-            self.valid_params['convert'] = str
+            self.valid_params['convert'] = StringConverter
 
     def parse(self, value):
         if value is None:
@@ -542,7 +542,7 @@ class Date(DateTime):
         kwargs.pop('dt_format', None)
         super(Date, self).__init__(dt_format='iso8601', **kwargs)
         if not self.valid_params.get('convert'):
-            self.valid_params['convert'] = str
+            self.valid_params['convert'] = StringConverter
 
     def parse(self, value):
         if value is None:
@@ -574,7 +574,7 @@ class Url(StringMixin, Raw):
         self.scheme = scheme
 
         if not self.valid_params.get('convert'):
-            self.valid_params['convert'] = str
+            self.valid_params['convert'] = StringConverter
 
 
 class FormattedString(StringMixin, Raw):
