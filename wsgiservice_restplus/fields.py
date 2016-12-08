@@ -13,6 +13,8 @@ from wsgiservice_restplus.inputs import date_from_iso8601, datetime_from_iso8601
 from wsgiservice_restplus.utils import not_none
 from wsgiservice_restplus.converters import Boolean as BooleanConverter
 from wsgiservice_restplus.converters import String as StringConverter
+from wsgiservice_restplus.converters import DateTime as DateTimeConverter
+from wsgiservice_restplus.converters import Integer as IntegerConverter
 
 
 __all__ = ('Raw', 'String', 'FormattedString',
@@ -239,6 +241,7 @@ class List(Raw):
         super(List, self).__init__(**kwargs)
         if not self.valid_params.get('convert'):
             self.valid_params['convert'] = list
+
         error_msg = 'The type of the list elements must be a subclass of fields.Raw'
         if isinstance(cls_or_instance, type):
             if not issubclass(cls_or_instance, Raw):
@@ -295,7 +298,7 @@ class StringMixin(object):
         self.pattern = kwargs.pop('pattern', None)
         super(StringMixin, self).__init__(*args, **kwargs)
         if not self.valid_params.get('convert'):
-            self.valid_params['convert'] = str
+            self.valid_params['convert'] = StringConverter
 
     def schema(self):
         schema = super(StringMixin, self).schema()
@@ -375,7 +378,7 @@ class Integer(NumberMixin, Raw):
     def __init__(self, *args, **kwargs):
         super(Integer, self).__init__(*args, **kwargs)
         if not self.valid_params.get('convert'):
-            self.valid_params['convert'] = int
+            self.valid_params['convert'] = IntegerConverter
 
     def format(self, value):
         try:
@@ -471,7 +474,7 @@ class DateTime(MinMaxMixin, Raw):
         super(DateTime, self).__init__(**kwargs)
         self.dt_format = dt_format
         if not self.valid_params.get('convert'):
-            self.valid_params['convert'] = str
+            self.valid_params['convert'] = DateTimeConverter
 
     def parse(self, value):
         if value is None:
@@ -542,7 +545,7 @@ class Date(DateTime):
         kwargs.pop('dt_format', None)
         super(Date, self).__init__(dt_format='iso8601', **kwargs)
         if not self.valid_params.get('convert'):
-            self.valid_params['convert'] = str
+            self.valid_params['convert'] = DateTimeConverter
 
     def parse(self, value):
         if value is None:
