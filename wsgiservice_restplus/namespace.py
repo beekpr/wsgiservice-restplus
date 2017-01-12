@@ -329,7 +329,7 @@ class Namespace(object):
         param['in'] = _in
         param['description'] = doc or None
 
-        if type(convert) == type:
+        if type(convert) == type or hasattr(convert, '__call__'):
             param['type'] = convert
         elif hasattr(convert, "converts_to_type"):
             param['type'] = eval(convert.converts_to_type)
