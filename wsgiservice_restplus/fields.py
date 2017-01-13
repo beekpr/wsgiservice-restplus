@@ -124,7 +124,7 @@ class Raw(object):
         self.default = default
         self.title = title
         self.description = description
-        self.required = mandatory
+        self.required = mandatory or False
         self.readonly = readonly
         self.example = example or self.__schema_example__
         self.mask = mask
@@ -133,7 +133,7 @@ class Raw(object):
             "re": kwargs.get('re', None),
             "convert": kwargs.get('convert', None),
             "doc": self.description or None,
-            "mandatory": kwargs.get('mandatory', False)
+            "mandatory": self.required
         }
 
         format_description = kwargs.get('add_format')
