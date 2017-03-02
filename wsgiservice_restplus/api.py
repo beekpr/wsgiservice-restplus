@@ -218,12 +218,7 @@ def generate_swagger_resource(api, swagger_path):
 
         def GET(self, internal=False):
 
-            show_internal = False
-            try:
-                if match('[T,t][r,R][u,U][e,E]', internal[:4]):
-                    show_internal = True
-            except Exception:
-                pass
+            show_internal = (unicode(internal) or "").lower() == "true"
 
             self.type = str('application/json')
             return api.__schema__(show_internal=show_internal)

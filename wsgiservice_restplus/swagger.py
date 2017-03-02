@@ -158,10 +158,12 @@ class Swagger(object):
         responses = self.register_errors()
 
         for ns in self.api.namespaces:
-            if not show_internal and ns.internal:
+            if ns.internal and not show_internal:
                 continue
             for resource, url, kwargs in ns.resources:
-                if show_internal or not resource.internal:
+                if resource.internal and not show_internal:
+                    continue
+                else:
                     paths[extract_path(url)] = self.serialize_resource(ns, resource, url, kwargs)
 
         specs = {
@@ -176,7 +178,7 @@ class Swagger(object):
             'tags': tags,
             'definitions': self.serialize_definitions() or None,
             'responses': responses or None,
-            'host': None,       #NOTE: removed get_host() as not used.
+            'host': None,
         }
         return not_none(specs)
 
