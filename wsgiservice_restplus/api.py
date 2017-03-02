@@ -86,6 +86,7 @@ class Api(object):
         self._default_error_handler = None
         self.tags = tags or []
         self._schema = None # cache for Swagger JSON specification
+        self._internal_schema = None
         self.models = {}
         self._refresolver = None
         self.format_checker = format_checker
@@ -186,8 +187,14 @@ class Api(object):
         :returns dict: the schema as a serializable dict
         """
 
-        if not self._schema or show_internal:
-            self._schema = Swagger(self).as_dict(show_internal=show_internal)
+        if show_internal and self._internal_schema:
+            return self._internal_schema
+        elif show_internal:
+            self._internal_schema = Swagger(self).as_dict(show_internal=show_internal)
+            return self._internal_schema
+
+        if not self._schema:
+            self._schema = Swagger(self).as_dict()
 
         return self._schema
 
