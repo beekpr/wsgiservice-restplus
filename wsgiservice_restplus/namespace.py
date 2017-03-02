@@ -34,6 +34,7 @@ class Namespace(object):
         self.decorators = decorators if decorators else []
         self.resources = []
         self.apis = []
+        self.internal = kwargs.get('internal', False)
 
         if 'api' in kwargs:
             self.apis.append(kwargs['api'])
@@ -80,6 +81,8 @@ class Namespace(object):
             else:
                 if cls._path != url:
                     raise ValueError
+
+            cls.internal = kwargs.get('internal', False)
 
             self.add_resource(cls, url, **kwargs)
             return cls

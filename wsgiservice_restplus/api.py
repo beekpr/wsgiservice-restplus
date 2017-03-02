@@ -20,6 +20,7 @@ HEADERS_BLACKLIST = ('Content-Length',)
 DEFAULT_REPRESENTATIONS = [('application/json', None)]
 
 from wsgiservice import Resource as WSGIResource
+from re import match
 
 
 class Api(object):
@@ -179,13 +180,15 @@ class Api(object):
         """
         return self.prefix
 
-    def __schema__(self):
+    def __schema__(self, show_internal=False):
         """The Swagger specifications/schema for this API
 
         :returns dict: the schema as a serializable dict
         """
-        if not self._schema:
-            self._schema = Swagger(self).as_dict()
+
+        if not self._schema or show_internal:
+            self._schema = Swagger(self).as_dict(show_internal=show_internal)
+
         return self._schema
 
 
@@ -206,9 +209,17 @@ def generate_swagger_resource(api, swagger_path):
 
         _path = swagger_path
 
-        def GET(self):
+        def GET(self, internal=False):
+
+            show_internal = False
+            try:
+                if match('[T,t][r,R][u,U][e,E]', internal[:4]):
+                    show_internal = True
+            except Exception:
+                pass
+
             self.type = str('application/json')
-            return api.__schema__()
+            return api.__schema__(show_internal=show_internal)
 
     return SwaggerResource
 

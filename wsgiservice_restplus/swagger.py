@@ -33,12 +33,9 @@ PY_TYPES = {
 ### Finds wsgiservice path parameters in URL and binds groups to variable name
 RE_PARAMS = re.compile(r'{([^{}]+)}')
 
-### TODO: FUL-3376: Adapt to wsgiservice default
 DEFAULT_RESPONSE_DESCRIPTION = 'Success'
 DEFAULT_RESPONSE = {'description': DEFAULT_RESPONSE_DESCRIPTION}
 
-### TODO: FUL-3505 (error handling)
-# RE_RAISES = re.compile(r'^:raises\s+(?P<name>[\w\d_]+)\s*:\s*(?P<description>.*)$', re.MULTILINE)
 
 
 def ref(model):
@@ -70,10 +67,6 @@ def extract_path_params(path):
             'in': 'path',
             'required': True
         }
-
-        ### TODO: FUL-3506: Merge type information from annotation with decorator
-        ###       to add 'type' attribute to param (currently implemented
-        ###        with wsgiservice.validate decorator)
         params[name] = param
     return params
 
@@ -109,11 +102,7 @@ def parse_docstring(obj):
     summary = raw.strip(' \n').split('\n')[0].split('.')[0] if raw else None
     raises = {}
     details = raw.replace(summary, '').lstrip('. \n').strip(' \n') if raw else None
-    # TODO: FUL-3505
-    # for match in RE_RAISES.finditer(raw or ''):
-    #     raises[match.group('name')] = match.group('description')
-    #     if details:
-    #         details = details.replace(match.group(0), '')
+
     parsed = {
         'raw': raw,
         'summary': summary or None,
@@ -133,7 +122,7 @@ class Swagger(object):
         self.api = api
         self._registered_models = {}
 
-    def as_dict(self):
+    def as_dict(self, show_internal=False):
         '''
         Output the specification as a serializable ``dict``.
 
@@ -169,8 +158,11 @@ class Swagger(object):
         responses = self.register_errors()
 
         for ns in self.api.namespaces:
+            if not show_internal and ns.internal:
+                continue
             for resource, url, kwargs in ns.resources:
-                paths[extract_path(url)] = self.serialize_resource(ns, resource, url, kwargs)
+                if show_internal or not resource.internal:
+                    paths[extract_path(url)] = self.serialize_resource(ns, resource, url, kwargs)
 
         specs = {
             'swagger': '2.0',
@@ -184,20 +176,10 @@ class Swagger(object):
             'tags': tags,
             'definitions': self.serialize_definitions() or None,
             'responses': responses or None,
-            'host': self.get_host(),
+            'host': None,       #NOTE: removed get_host() as not used.
         }
         return not_none(specs)
 
-    ### TODO: FUL-3376: Get (sub)domain of URL (where is this information stored in wsgiservice?)
-    def get_host(self):
-        # hostname = current_app.config.get('SERVER_NAME', None) or None
-        # if hostname and self.api.blueprint and self.api.blueprint.subdomain:
-        #     hostname = '.'.join((self.api.blueprint.subdomain, hostname))
-        # return hostname
-        return None
-
-    ### Accumulates a list of (name,description) pairs from namespaces owned by Api instance
-    ### if no extra tags are passed to Api instance at construction
     def extract_tags(self, api):
         tags = []
         by_name = {}
