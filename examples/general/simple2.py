@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from wsgiservice import Resource, raise_404, raise_403, raise_201, raise_409, raise_200, validate
+from wsgiservice.resource import Resource
 
 from wsgiservice_restplus import namespace, fields
 from wsgiservice_restplus.api import Api
@@ -23,7 +23,6 @@ api = Api(
 ping_ns = namespace.Namespace(
     name="Ping Pong Endpoint",
     description="Test endpoint for trying out the request calls and swagger documentation",
-    internal=False
 )
 
 api.add_namespace(ping_ns)
@@ -31,7 +30,6 @@ api.add_namespace(ping_ns)
 def Integer(value):
     """Converts value to Integer"""
     return int(value)
-
 
 
 # ===== MODELS: ======
@@ -46,7 +44,6 @@ tesball_payload = ping_ns.model(
     }
 )
 
-
 pong_model = ping_ns.model(
     "Pong Response",
     {
@@ -59,7 +56,6 @@ pong_model = ping_ns.model(
             example="Wow, that was a BAAAAAAD shot!")
     }
 )
-
 
 ball_model = ping_ns.model(
     "ball model",
@@ -85,7 +81,7 @@ ball_count_model = ping_ns.model(
 # ===== ENDPOINTS ======
 
 
-@ping_ns.route('/testball', internal=True)
+@ping_ns.route('/testball', public=True)
 class Testball(Resource):
     """Example endpoint function for TESTING purposes only!"""
 
@@ -107,7 +103,7 @@ class Testball(Resource):
             return {"response": "Dread lord, you're calling this a serve? ;p"}
 
 
-@ping_ns.route('/ping')
+@ping_ns.route('/ping', public=False)
 class Ping(Resource):
     """Example endpoint function for TESTING purposes only!"""
 

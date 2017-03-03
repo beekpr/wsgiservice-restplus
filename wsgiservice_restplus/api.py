@@ -19,8 +19,7 @@ HEADERS_BLACKLIST = ('Content-Length',)
 # Replaced output_json by None (cf. wsgiservice.Resource content negotiation)
 DEFAULT_REPRESENTATIONS = [('application/json', None)]
 
-from wsgiservice import Resource as WSGIResource
-from re import match
+from wsgiservice.resource import Resource as WSGIResource
 
 
 class Api(object):

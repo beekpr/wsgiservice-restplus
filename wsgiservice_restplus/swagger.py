@@ -158,10 +158,10 @@ class Swagger(object):
         responses = self.register_errors()
 
         for ns in self.api.namespaces:
-            if ns.internal and not show_internal:
+            if not ns.public and not show_internal:
                 continue
             for resource, url, kwargs in ns.resources:
-                if resource.internal and not show_internal:
+                if not resource.public and not show_internal:
                     continue
                 else:
                     paths[extract_path(url)] = self.serialize_resource(ns, resource, url, kwargs)
