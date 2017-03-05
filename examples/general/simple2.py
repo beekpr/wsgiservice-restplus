@@ -23,6 +23,7 @@ api = Api(
 ping_ns = namespace.Namespace(
     name="Ping Pong Endpoint",
     description="Test endpoint for trying out the request calls and swagger documentation",
+    public=True
 )
 
 api.add_namespace(ping_ns)
@@ -81,7 +82,7 @@ ball_count_model = ping_ns.model(
 # ===== ENDPOINTS ======
 
 
-@ping_ns.route('/testball', public=True)
+@ping_ns.route('/testball', public=False)
 class Testball(Resource):
     """Example endpoint function for TESTING purposes only!"""
 
@@ -103,7 +104,7 @@ class Testball(Resource):
             return {"response": "Dread lord, you're calling this a serve? ;p"}
 
 
-@ping_ns.route('/ping', public=False)
+@ping_ns.route('/ping', public=True)
 class Ping(Resource):
     """Example endpoint function for TESTING purposes only!"""
 
@@ -126,8 +127,8 @@ class Ping(Resource):
             return {"response": "Dread lord, you're calling this a serve? ;p"}
 
 
+@ping_ns.route('/ping/{rally}', public=True)
 @ping_ns.path_param(name='rally', description='RALLY NUMBER (hybrid)', convert=Integer)
-@ping_ns.route('/ping/{rally}')
 class Pong(Resource):
 
     @ping_ns.query_param(name='balls', doc='NUMBER OF BALLS EXCHANGED (HYBRYD!)')

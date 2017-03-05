@@ -36,7 +36,7 @@ class Namespace(object):
         self.decorators = decorators if decorators else []
         self.resources = []
         self.apis = []
-        self.public = kwargs.get('public', True)
+        self.public = kwargs.get('public', False)
 
         if 'api' in kwargs:
             self.apis.append(kwargs['api'])
@@ -58,7 +58,7 @@ class Namespace(object):
             namespace.add_resource(Foo, '/foo', endpoint="foo")
             namespace.add_resource(FooSpecial, '/special/foo', endpoint="foo")
         """
-        resource.public = kwargs.get('public', True)
+        resource.public = kwargs.get('public', False)
 
         self.resources.append((resource, url, kwargs))
         for api in self.apis:
