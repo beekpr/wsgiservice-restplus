@@ -22,6 +22,8 @@ class Namespace(object):
     :param list decorators: A list of decorators to apply to each resources
     :param bool validate: Whether or not to perform validation on this namespace
     :param Api api: an optional API to attache to the namespace
+    :param bool public: Flags the namespace as public (when public=False, Api will hide this
+    resource from swagger.json unless its retrieved via interna=true query parameter.)
     """
 
     def __init__(self, name, description=None, path='/', decorators=None, validate=None, **kwargs):
@@ -34,6 +36,7 @@ class Namespace(object):
         self.decorators = decorators if decorators else []
         self.resources = []
         self.apis = []
+        self.public = kwargs.get('public', False)
 
         if 'api' in kwargs:
             self.apis.append(kwargs['api'])
@@ -55,6 +58,8 @@ class Namespace(object):
             namespace.add_resource(Foo, '/foo', endpoint="foo")
             namespace.add_resource(FooSpecial, '/special/foo', endpoint="foo")
         """
+        resource.public = kwargs.get('public', False)
+
         self.resources.append((resource, url, kwargs))
         for api in self.apis:
             api.register_resource(self, resource, url, **kwargs)
