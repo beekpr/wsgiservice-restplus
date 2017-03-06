@@ -23,7 +23,6 @@ api = Api(
 ping_ns = namespace.Namespace(
     name="Ping Pong Endpoint",
     description="Test endpoint for trying out the request calls and swagger documentation",
-    public=True
 )
 
 api.add_namespace(ping_ns)
@@ -82,7 +81,7 @@ ball_count_model = ping_ns.model(
 # ===== ENDPOINTS ======
 
 
-@ping_ns.route('/testball', public=False)
+@ping_ns.route('/testball')
 class Testball(Resource):
     """Example endpoint function for TESTING purposes only!"""
 
