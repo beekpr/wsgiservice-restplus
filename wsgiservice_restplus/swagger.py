@@ -158,8 +158,6 @@ class Swagger(object):
         responses = self.register_errors()
 
         for ns in self.api.namespaces:
-            if not ns.public and not show_internal:
-                continue
             for resource, url, kwargs in ns.resources:
                 if not resource.public and not show_internal:
                     continue

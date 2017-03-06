@@ -36,7 +36,6 @@ class Namespace(object):
         self.decorators = decorators if decorators else []
         self.resources = []
         self.apis = []
-        self.public = kwargs.get('public', False)
 
         if 'api' in kwargs:
             self.apis.append(kwargs['api'])
