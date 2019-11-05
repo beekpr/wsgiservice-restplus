@@ -213,8 +213,9 @@ class Namespace(object):
 
         for model in models:
             expect.append(model)
-            model_validations = self._prepare_validation_dict(model)
-            validations.update(model_validations)
+            if not isinstance(model, (list, tuple)):
+                model_validations = self._prepare_validation_dict(model)
+                validations.update(model_validations)
 
         def wrapper(documented):
 
