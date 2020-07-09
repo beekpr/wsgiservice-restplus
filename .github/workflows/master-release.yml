@@ -34,8 +34,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ envs.VERSION }}
-          release_name: Release ${{ envs.VERSION }}
+          tag_name: ${{ env.VERSION }}
+          release_name: Release ${{ env.VERSION }}
           draft: false
           prerelease: false
       - name: Upload Release Asset
@@ -45,8 +45,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./dist/wsgiservice_restplus-${{ envs.VERSION }}.zip
-          asset_name: wsgiservice_restplus-${{ envs.VERSION }}.zip
+          asset_path: ./dist/wsgiservice_restplus-${{ env.VERSION }}.zip
+          asset_name: wsgiservice_restplus-${{ env.VERSION }}.zip
           asset_content_type: application/zip
       - name: Upload Release Asset
         id: upload-release-asset-tar
