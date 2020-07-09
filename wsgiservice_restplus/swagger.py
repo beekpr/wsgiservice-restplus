@@ -1,23 +1,26 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals, absolute_import
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import re
-
-from inspect import isclass, getdoc
 from collections import Hashable
+from inspect import getdoc
+from inspect import isclass
 from urllib import quote
 
-from six import string_types, itervalues, iteritems, iterkeys
-
-from wsgiservice_restplus._compat import OrderedDict
+from six import iteritems
+from six import iterkeys
+from six import itervalues
+from six import string_types
 
 from wsgiservice_restplus import fields
+from wsgiservice_restplus._compat import OrderedDict
 from wsgiservice_restplus.model import Model
 from wsgiservice_restplus.utils import format_definition_reference
-from wsgiservice_restplus.utils import merge, not_none, not_none_sorted
-
+from wsgiservice_restplus.utils import merge
+from wsgiservice_restplus.utils import not_none
+from wsgiservice_restplus.utils import not_none_sorted
 from wsgiservice_restplus.wsgiservice_adaptors import get_resource_http_methods
-
 
 PATH_TYPES = {
     'int': 'integer',
