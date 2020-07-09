@@ -40,8 +40,9 @@ setup(
     version=__version__,
     description=__description__,
     long_description=long_description,
-    authors='Filip Ciesielski, Barnabás Südy',
+    author='Filip Ciesielski, Barnabás Südy',
     author_email='filip.ciesielski@beekeeper.io, barnabas@beekeeper.io',
+    url='https://github.com/beekpr/wsgiservice-restplus/',
 
     include_package_data=True,
     packages=find_packages(exclude=['tests', 'tests.*']),

@@ -7,7 +7,7 @@ name: Publish release on new master commit
 
 jobs:
   build:
-    name: Build & release
+    name: Release source code
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -21,13 +21,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install setuptools wheel
           pip install -r requirements.txt
-      - name: Build project
-        run: |
-          python2 setup.py sdist --formats=gztar,zip
-          python2 setup.py dist_info
       - name: Get version
         run: |
-          echo ::set-env name=VERSION::`cat wsgiservice_restplus.dist-info/METADATA | grep "^Version" | sed -e "s/^Version: //"`
+          echo ::set-env name=VERSION::`python2 setup.py --version"`
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -38,23 +34,3 @@ jobs:
           release_name: Release ${{ env.VERSION }}
           draft: false
           prerelease: false
-      - name: Upload Release Asset
-        id: upload-release-asset-zip
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./dist/wsgiservice_restplus-${{ env.VERSION }}.zip
-          asset_name: wsgiservice_restplus-${{ env.VERSION }}.zip
-          asset_content_type: application/zip
-      - name: Upload Release Asset
-        id: upload-release-asset-tar
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./dist/wsgiservice_restplus-${{ env.VERSION }}.tar.gz
-          asset_name: wsgiservice_restplus-${{ env.VERSION }}.tar.gz
-          asset_content_type: application/gzip
