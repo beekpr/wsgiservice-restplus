@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 import re
 
 from copy import deepcopy
+from urllib import quote
+
 from six import iteritems
 
 from wsgiservice_restplus._compat import OrderedDict
@@ -76,3 +78,6 @@ def not_none_sorted(data):
     ordered_items = OrderedDict(sorted(iteritems(data)))
     return OrderedDict((k, v) for k, v in iteritems(ordered_items) if v is not None)
 
+
+def format_definition_reference(definition_name):
+    return '#/definitions/{0}'.format(quote(definition_name))

@@ -13,6 +13,7 @@ from wsgiservice_restplus._compat import OrderedDict
 
 from wsgiservice_restplus import fields
 from wsgiservice_restplus.model import Model
+from wsgiservice_restplus.utils import format_definition_reference
 from wsgiservice_restplus.utils import merge, not_none, not_none_sorted
 
 from wsgiservice_restplus.wsgiservice_adaptors import get_resource_http_methods
@@ -38,9 +39,6 @@ RE_PARAMS = re.compile(r'{([^{}]+)}')
 DEFAULT_RESPONSE_DESCRIPTION = 'Success'
 DEFAULT_RESPONSE = {'description': DEFAULT_RESPONSE_DESCRIPTION}
 
-
-def format_definition_reference(definition_name):
-    return '#/definitions/{0}'.format(quote(definition_name))
 
 def ref(model):
     '''Return a reference to model in definitions'''

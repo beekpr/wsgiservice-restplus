@@ -10,7 +10,7 @@ from six import itervalues, text_type, string_types
 
 from wsgiservice_restplus.errors import RestError
 from wsgiservice_restplus.inputs import date_from_iso8601, datetime_from_iso8601, datetime_from_rfc822
-from wsgiservice_restplus.swagger import format_definition_reference
+from wsgiservice_restplus.utils import format_definition_reference
 from wsgiservice_restplus.utils import not_none
 from wsgiservice_restplus.converters import Boolean as BooleanConverter
 from wsgiservice_restplus.converters import String as StringConverter
