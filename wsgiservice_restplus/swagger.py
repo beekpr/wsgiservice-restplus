@@ -5,6 +5,8 @@ import re
 
 from inspect import isclass, getdoc
 from collections import Hashable
+from urllib import quote
+
 from six import string_types, itervalues, iteritems, iterkeys
 
 from wsgiservice_restplus._compat import OrderedDict
@@ -37,11 +39,13 @@ DEFAULT_RESPONSE_DESCRIPTION = 'Success'
 DEFAULT_RESPONSE = {'description': DEFAULT_RESPONSE_DESCRIPTION}
 
 
+def format_definition_reference(definition_name):
+    return '#/definitions/{0}'.format(quote(definition_name))
 
 def ref(model):
     '''Return a reference to model in definitions'''
     name = model.name if isinstance(model, Model) else model
-    return {'$ref': '#/definitions/{0}'.format(name)}
+    return {'$ref': format_definition_reference(name)}
 
 
 def _v(value):
@@ -390,7 +394,7 @@ class Swagger(object):
                         error_responses = getattr(handler, '__apidoc__', {}).get('responses', {})
                         code = list(error_responses.keys())[0] if error_responses else None
                         if code and exception.__name__ == name:
-                            responses[code] = {'$ref': '#/responses/{0}'.format(name)}
+                            responses[code] = {'$ref': '#/responses/{0}'.format(quote(name))}
                             break
 
         if not responses:
