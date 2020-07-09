@@ -23,7 +23,7 @@ jobs:
           pip install -r requirements.txt
       - name: Get version
         run: |
-          echo ::set-env name=VERSION::`python2 setup.py --version"`
+          echo ::set-env name=VERSION::`python2 setup.py --version`
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
