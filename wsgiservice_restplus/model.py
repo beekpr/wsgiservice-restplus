@@ -11,6 +11,7 @@ from six import iteritems, itervalues
 from jsonschema import Draft4Validator
 from jsonschema.exceptions import ValidationError
 
+from wsgiservice_restplus.swagger import format_definition_reference
 from wsgiservice_restplus.utils import not_none
 
 
@@ -114,7 +115,7 @@ class Model(dict, MutableMapping):
 
         if self.__parents__:
             refs = [
-                {'$ref': '#/definitions/{0}'.format(parent.name)}
+                {'$ref': format_definition_reference(parent.name)}
                 for parent in self.__parents__
             ]
 
