@@ -2,21 +2,26 @@
 from __future__ import unicode_literals
 
 from calendar import timegm
-from datetime import date, datetime
-from decimal import Decimal, ROUND_HALF_EVEN
+from datetime import date
+from datetime import datetime
+from decimal import Decimal
+from decimal import ROUND_HALF_EVEN
 from email.utils import formatdate
 
-from six import itervalues, text_type, string_types
+from six import itervalues
+from six import string_types
+from six import text_type
 
-from wsgiservice_restplus.errors import RestError
-from wsgiservice_restplus.inputs import date_from_iso8601, datetime_from_iso8601, datetime_from_rfc822
-from wsgiservice_restplus.swagger import format_definition_reference
-from wsgiservice_restplus.utils import not_none
 from wsgiservice_restplus.converters import Boolean as BooleanConverter
-from wsgiservice_restplus.converters import String as StringConverter
 from wsgiservice_restplus.converters import DateTime as DateTimeConverter
 from wsgiservice_restplus.converters import Integer as IntegerConverter
-
+from wsgiservice_restplus.converters import String as StringConverter
+from wsgiservice_restplus.errors import RestError
+from wsgiservice_restplus.inputs import date_from_iso8601
+from wsgiservice_restplus.inputs import datetime_from_iso8601
+from wsgiservice_restplus.inputs import datetime_from_rfc822
+from wsgiservice_restplus.utils import format_definition_reference
+from wsgiservice_restplus.utils import not_none
 
 __all__ = ('Raw', 'String', 'FormattedString',
            'DateTime', 'Date',

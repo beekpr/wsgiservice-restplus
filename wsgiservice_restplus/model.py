@@ -4,16 +4,15 @@ from __future__ import unicode_literals
 import copy
 import re
 import warnings
-
 from collections import MutableMapping
-from six import iteritems, itervalues
 
 from jsonschema import Draft4Validator
 from jsonschema.exceptions import ValidationError
+from six import iteritems
+from six import itervalues
 
-from wsgiservice_restplus.swagger import format_definition_reference
+from wsgiservice_restplus.utils import format_definition_reference
 from wsgiservice_restplus.utils import not_none
-
 
 RE_REQUIRED = re.compile(r'u?\'(?P<name>.*)\' is a required property', re.I | re.U)
 
