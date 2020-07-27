@@ -16,6 +16,7 @@ from six import string_types
 from wsgiservice_restplus import fields
 from wsgiservice_restplus._compat import OrderedDict
 from wsgiservice_restplus.model import Model
+from wsgiservice_restplus.utils import format_definition_key
 from wsgiservice_restplus.utils import format_definition_reference
 from wsgiservice_restplus.utils import merge
 from wsgiservice_restplus.utils import not_none
@@ -404,7 +405,7 @@ class Swagger(object):
 
     def serialize_definitions(self):
         return dict(
-            (name, model.__schema__)
+            (format_definition_key(name), model.__schema__)
             for name, model in iteritems(self._registered_models)
         )
 
