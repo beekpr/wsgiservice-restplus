@@ -13,7 +13,7 @@ from wsgiservice_restplus._compat import OrderedDict
 FIRST_CAP_RE = re.compile('(.)([A-Z][a-z]+)')
 ALL_CAP_RE = re.compile('([a-z0-9])([A-Z])')
 
-__all__ = ('merge', 'camel_to_dash', 'default_id', 'not_none', 'not_none_sorted')
+__all__ = ('merge', 'camel_to_dash', 'default_id', 'not_none', 'not_none_sorted', 'format_definition_reference', 'format_definition_key')
 
 
 def merge(first, second):
@@ -79,5 +79,24 @@ def not_none_sorted(data):
     return OrderedDict((k, v) for k, v in iteritems(ordered_items) if v is not None)
 
 
+def str_to_pascal_case(s):
+    words = s.split(' ')
+    return ''.join([word.capitalize() for word in words])
+
+
 def format_definition_reference(definition_name):
-    return '#/definitions/{0}'.format(quote(definition_name))
+    """
+    JSON reference is an URI ( see: https://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03#section-3)
+    which according to specs ( https://tools.ietf.org/html/rfc3986#section-2.4 ) requires
+    all special characters to be percent-encoded.
+    This standard is unfortunately not followed by some OpenAPI docs consumers
+    (like Stoplight or older Swagger UI versions).
+    For that reason we're making all model keys PascalCase so there's no need to encode space as '%20'
+    (being the only special character that we're using so far) which can be misinterpreted.
+    """
+    return '#/definitions/{0}'.format(quote(format_definition_key(definition_name)))
+
+
+def format_definition_key(definition_name):
+    """See format_definition_reference function description for context"""
+    return str_to_pascal_case(definition_name)
