@@ -190,6 +190,6 @@ class Model(dict, MutableMapping):
         return key, error.message
 
     def __unicode__(self):
-        return 'Model({name},{{{fields}}})'.format(name=self.name, fields=','.join(self.keys()))
+        return 'Model({name},{{{fields}}})'.format(name=self.name, fields=','.join(list(self.keys())))
 
     __str__ = __unicode__

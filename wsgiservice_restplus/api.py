@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import wsgiservice
+from collections import OrderedDict
+import six
+
 from jsonschema import RefResolver, FormatChecker
 
-from wsgiservice_restplus._compat import OrderedDict
+import wsgiservice
+from wsgiservice.resource import Resource as WSGIResource
+from wsgiservice_restplus.errors import SecurityError
 from wsgiservice_restplus.namespace import Namespace
 from wsgiservice_restplus.swagger import Swagger
 from wsgiservice_restplus.utils import default_id, camel_to_dash # deleted unpack
-
-from wsgiservice_restplus.errors import SecurityError
-
 from wsgiservice_restplus.wsgiservice_adaptors import get_resource_http_methods
+
 
 # List headers that should never be handled by Flask-RESTPlus
 HEADERS_BLACKLIST = ('Content-Length',)
@@ -19,7 +21,7 @@ HEADERS_BLACKLIST = ('Content-Length',)
 # Replaced output_json by None (cf. wsgiservice.Resource content negotiation)
 DEFAULT_REPRESENTATIONS = [('application/json', None)]
 
-from wsgiservice.resource import Resource as WSGIResource
+
 
 
 class Api(object):
@@ -217,7 +219,7 @@ def generate_swagger_resource(api, swagger_path):
 
         def GET(self, internal=False):
 
-            show_internal = (unicode(internal) or "").lower() == "true"
+            show_internal = (six.text_type(internal) or "").lower() == "true"
 
             self.type = str('application/json')
             return api.__schema__(show_internal=show_internal)
