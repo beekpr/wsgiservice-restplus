@@ -15,11 +15,11 @@ install_requires = [
     "jsonschema",
     "six>=1.3.0",
     "aniso8601>=0.82",
-    "wsgiservice==0.4.5"
+    "wsgiservice==0.5.0"
 ]
 
 dependency_links=[
-    "https://github.com/beekpr/wsgiservice/archive/0.4.5.zip#egg=wsgiservice-0.4.5"
+    "https://github.com/beekpr/wsgiservice/archive/0.5.0.zip#egg=wsgiservice"
 ]
 
 tests_require = ['nose', 'rednose', 'blinker', 'tzlocal']

@@ -4,9 +4,10 @@ from __future__ import unicode_literals
 
 import re
 from collections import Hashable
+from collections import OrderedDict
 from inspect import getdoc
 from inspect import isclass
-from urllib import quote
+from six.moves.urllib.parse import quote
 
 from six import iteritems
 from six import iterkeys
@@ -14,7 +15,6 @@ from six import itervalues
 from six import string_types
 
 from wsgiservice_restplus import fields
-from wsgiservice_restplus._compat import OrderedDict
 from wsgiservice_restplus.model import Model
 from wsgiservice_restplus.utils import format_definition_key
 from wsgiservice_restplus.utils import format_definition_reference
@@ -224,7 +224,7 @@ class Swagger(object):
             method_doc = doc.get(method, OrderedDict())
             method_impl = getattr(resource, method.upper())
             if hasattr(method_impl, 'im_func'):
-                method_impl = method_impl.im_func
+                method_impl = method_impl.__func__
             elif hasattr(method_impl, '__func__'):
                 method_impl = method_impl.__func__
             method_doc = merge(method_doc, getattr(method_impl, '__apidoc__', OrderedDict()))

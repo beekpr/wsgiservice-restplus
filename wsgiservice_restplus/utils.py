@@ -3,12 +3,12 @@ from __future__ import unicode_literals
 
 import re
 
+from collections import OrderedDict
 from copy import deepcopy
-from urllib import quote
+from six.moves.urllib.parse import quote
 
 from six import iteritems
 
-from wsgiservice_restplus._compat import OrderedDict
 
 FIRST_CAP_RE = re.compile('(.)([A-Z][a-z]+)')
 ALL_CAP_RE = re.compile('([a-z0-9])([A-Z])')

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
 import inspect
 import six
@@ -9,7 +9,7 @@ from inspect import isclass
 from wsgiservice_restplus.model import Model
 from wsgiservice_restplus.utils import merge
 
-from wsgiservice_adaptors import get_resource_http_methods
+from wsgiservice_restplus.wsgiservice_adaptors import get_resource_http_methods
 
 
 class Namespace(object):
@@ -238,7 +238,7 @@ class Namespace(object):
 
         validations = {}
 
-        for field_name, field in model.iteritems():
+        for field_name, field in six.iteritems(model):
             validations[field_name] = {
                 're': field.valid_params.get('re', None),
                 'convert': field.valid_params.get('convert', None),
