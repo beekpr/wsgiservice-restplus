@@ -80,7 +80,7 @@ class Namespace(object):
             if doc is not None:
                 self._handle_api_doc(cls, doc)
 
-            if getattr(cls,'_path', None) is None:
+            if getattr(cls, '_path', None) is None:
                 cls._path = url
             else:
                 if cls._path != url:
@@ -278,6 +278,40 @@ class Namespace(object):
     def marshal_list_with(self, fields, **kwargs):
         """A shortcut decorator for :meth:`~Api.marshal_with` with ``as_list=True``"""
         return self.marshal_with(fields, True, **kwargs)
+
+
+    def marshal_entity_versions_with(self, produces, as_list=False, code=200, description=None, **kwargs):
+        """
+        TODO: Write docs
+        :param produces:
+        :param code:
+        :param description:
+        :param kwargs:
+        :return:
+        """
+
+        def wrapper(func):
+            content = []
+            for content_type, fields in produces.iteritems():
+                content.append({
+                    content_type: [fields] if as_list else fields,
+                })
+
+            doc = {
+                'responses': {
+                    code: (description, content),
+                },
+            }
+
+            func.__apidoc__ = merge(getattr(func, '__apidoc__', {}), doc)
+            return func
+
+        return wrapper
+
+
+    def marshal_entity_versions_list_with(self, produces, **kwargs):
+        """A shortcut decorator for :meth:`~Api.marshal_entity_versions_with` with ``as_list=True``"""
+        return self.marshal_entity_versions_with(produces, True, **kwargs)
 
 
     def errorhandler(self, exception):

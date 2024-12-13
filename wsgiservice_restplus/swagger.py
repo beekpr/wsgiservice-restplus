@@ -370,11 +370,41 @@ class Swagger(object):
         return params
 
     def responses_for(self, doc, method):
-
         responses = {}
 
         for d in doc, doc[method]:
-            if 'responses' in d:
+            # We are dealing with multiple responses for the same code (e.g. multiple entity representations)
+            if 'content' in d:
+                pass
+                # TODO: The response with openapi3 should have the following structure:
+                """
+                get:
+                  summary: FooBar
+                  responses:
+                    '200':
+                      description: FooBar
+                      content:
+                        application/json:  # Specify content type
+                          schema:
+                            $ref: '#/definitions/StreamMember'  # Model specific for the content type
+                        application/vnd.io.beekeeper.stream_membersv2+json:
+                          schema:
+                            $ref: '#/components/StreamMemberv2'
+                """
+
+                # for code, responses in iteritems(d['content']):
+                #     description, models_list = (responses, None) if isinstance(responses, string_types) else responses
+                #     description = description or DEFAULT_RESPONSE_DESCRIPTION
+                #     if code in responses:
+                #         responses[code].update(description=description)
+                #     else:
+                #         responses[code] = {'description': description}
+                #     # Make sure there is a list of representations where the list contains a dict
+                #     # E.g. - {'application/vnd.io.beekeeper.stream_membersv2+json': StreamMemberv2Model}
+                #     if isinstance(models_list, list):
+                #         # TODO: Have a list with all the available content types and their model
+            # There is only one response for a given code
+            elif 'responses' in d:
                 for code, response in iteritems(d['responses']):
                     description, model = (response, None) if isinstance(response, string_types) else response
                     description = description or DEFAULT_RESPONSE_DESCRIPTION
