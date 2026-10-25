@@ -42,7 +42,7 @@ setup(
     long_description=long_description,
     author='Filip Ciesielski, Barnabás Südy',
     author_email='filip.ciesielski@beekeeper.io, barnabas@beekeeper.io',
-    url='https://github.com/beekpr/wsgiservice-restplus/',
+    url='https://github.com/lumapps/wsgiservice-restplus/',
 
     include_package_data=True,
     packages=find_packages(exclude=['tests', 'tests.*']),
